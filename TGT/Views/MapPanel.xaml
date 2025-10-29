@@ -5,8 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TGT.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
+             d:DesignHeight="450" d:DesignWidth="800"
+             xmlns:gmap="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation">
+    
     <Grid>
-            
+        <gmap:GMapControl x:Name="PART_Map"
+                  Zoom="7"
+                  MinZoom="2"
+                  MaxZoom="18"
+                  CanDragMap="True"
+                  MouseWheelZoomType="MousePositionWithoutCenter"/>
+
     </Grid>
 </UserControl>

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="clr-namespace:TGT.ViewModels"
              xmlns:local="clr-namespace:TGT.Views">
+    
     <UserControl.DataContext>
         <vm:TargetViewModel />
     </UserControl.DataContext>
