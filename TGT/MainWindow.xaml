@@ -7,6 +7,21 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <!-- 행: 위 3/4, 아래 1/4 -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="5*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+
+
+
+        <!-- MapPanel: 왼쪽 위 (3/4, 3/4) -->
+        <views:MapPanel Grid.Row="0" Grid.Column="0" 
+                    Margin="5" Background="LightBlue"/>
+
+        <!-- MissilePanel: 왼쪽 아래 (3/4, 1/4) -->
+        <views:TargetPanel Grid.Row="1" Grid.Column="0" 
+                       Margin="5" Background="LightGray"/>
 
     </Grid>
 </Window>
