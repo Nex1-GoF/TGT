@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="TGT.Views.TargetListPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:TGT.ViewModels"
+             xmlns:local="clr-namespace:TGT.Views">
+    <UserControl.DataContext>
+        <vm:TargetViewModel />
+    </UserControl.DataContext>
+
+    <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Targets}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <local:TargetCard />
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</UserControl>

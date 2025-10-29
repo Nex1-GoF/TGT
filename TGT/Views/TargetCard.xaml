@@ -1,0 +1,23 @@
+﻿<UserControl x:Class="TGT.Views.TargetCard"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Border Background="#112233" CornerRadius="6" Margin="6" Padding="10">
+        <StackPanel>
+            <TextBlock Text="{Binding Id}" Foreground="White" FontWeight="Bold" FontSize="14"/>
+            <TextBlock Text="{Binding DetectedType, StringFormat='모델: {0}'}" Foreground="White"/>
+            <TextBlock Text="{Binding Speed, StringFormat='속도: {0} m/s'}" Foreground="White"/>
+            <TextBlock Text="{Binding Altitude, StringFormat='고도: {0} m'}" Foreground="White" Margin="0,0,0,6"/>
+
+            <TextBlock Text="{Binding CurLocDisplay, StringFormat='현재위치: {0}'}" Foreground="White"/>
+            <TextBlock Text="{Binding EndLocDisplay, StringFormat='목표위치: {0}'}" Foreground="White"/>
+
+            <Button Content="시작"
+                    Command="{Binding DataContext.StartTargetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                    CommandParameter="{Binding}"
+                    Background="#007ACC"
+                    Foreground="White"
+                    Margin="0,6,0,0"/>
+        </StackPanel>
+    </Border>
+</UserControl>

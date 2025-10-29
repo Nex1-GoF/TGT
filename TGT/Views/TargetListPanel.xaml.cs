@@ -16,11 +16,11 @@ using System.Windows.Shapes;
 namespace TGT.Views
 {
     /// <summary>
-    /// Targe셰무디.xaml에 대한 상호 작용 논리
+    /// TargetListPanel.xaml에 대한 상호 작용 논리
     /// </summary>
-    public partial class Targe셰무디 : UserControl
+    public partial class TargetListPanel : UserControl
     {
-        public Targe셰무디()
+        public TargetListPanel()
         {
             InitializeComponent();
         }

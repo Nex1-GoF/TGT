@@ -12,18 +12,17 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Windows.Controls;
-using TGT.ViewModels;
-using TGT.Services;
 
 namespace TGT.Views
 {
-    public partial class TargetPanel : UserControl
+    /// <summary>
+    /// TargetCard.xaml에 대한 상호 작용 논리
+    /// </summary>
+    public partial class TargetCard : UserControl
     {
-        public TargetPanel()
+        public TargetCard()
         {
             InitializeComponent();
-            DataContext = new TargetViewModel(TargetService.Instance);
         }
     }
 }
