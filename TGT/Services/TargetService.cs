@@ -23,6 +23,7 @@ namespace TGT.Services
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) }; // 10Hz
             _timer.Tick += UpdateTargets;
             _timer.Start();
+            
         }
 
         private void UpdateTargets(object sender, EventArgs e)
