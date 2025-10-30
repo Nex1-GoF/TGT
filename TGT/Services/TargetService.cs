@@ -76,6 +76,8 @@ namespace TGT.Services
             }
         }
 
+
+
         private Target? FindTarget(char id)
         {
             return Targets.FirstOrDefault(t => t.Id == id);

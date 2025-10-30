@@ -1,8 +1,17 @@
 ﻿<UserControl x:Class="TGT.Views.TargetCard"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
 
     <Border Background="#112233" CornerRadius="6" Margin="6" Padding="10">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
+                <i:InvokeCommandAction Command="{Binding DataContext.SelectTargetCommand,
+                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                       CommandParameter="{Binding}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+
         <StackPanel>
             <TextBlock Text="{Binding Id}" Foreground="White" FontWeight="Bold" FontSize="14"/>
             <TextBlock Text="{Binding DetectedType, StringFormat='모델: {0}'}" Foreground="White"/>

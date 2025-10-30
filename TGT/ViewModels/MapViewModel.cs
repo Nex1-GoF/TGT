@@ -2,11 +2,13 @@
 using GMap.NET;
 using GMap.NET.WindowsPresentation;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
+using TGT.Views;
 
 namespace TGT.ViewModels
 {
@@ -62,14 +64,8 @@ namespace TGT.ViewModels
 
             var marker = new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))
             {
-                Shape = new Ellipse
-                {
-                    Width = 10,
-                    Height = 10,
-                    Fill = Brushes.Red,
-                    Stroke = Brushes.Black,
-                    StrokeThickness = 1.5
-                },
+                Shape = new TargetMarker(target),
+                Offset = new Point(-20, -20),
                 Tag = target.Id.ToString()
             };
             TargetMarkers.Add(marker);

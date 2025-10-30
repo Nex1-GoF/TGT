@@ -29,5 +29,27 @@ namespace TGT.ViewModels
         {
             _service.StartTarget(t.Id);
         }
+
+        // 태현 -- 표적 포커스 변경
+        [RelayCommand]
+        private void SelectTarget(Target selected)
+        {
+            if (selected == null) return;
+
+            // 이미 선택된 항목을 클릭한 경우 → 모든 포커스 해제
+            if (selected.IsFocused)
+            {
+                foreach (var t in Targets)
+                    t.IsFocused = false;
+                return;
+            }
+
+            // 새로 선택된 항목이라면 나머지 해제 후 현재만 true
+            foreach (var t in Targets)
+                t.IsFocused = false;
+
+            selected.IsFocused = true;
+        }
+
     }
 }

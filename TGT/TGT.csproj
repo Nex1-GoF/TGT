@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Converter\NewFolder\" />
+    <Folder Include="Converters\NewFolder\" />
   </ItemGroup>
 
 </Project>

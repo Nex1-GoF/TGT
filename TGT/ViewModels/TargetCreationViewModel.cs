@@ -27,6 +27,10 @@ namespace TGT.ViewModels
         [RelayCommand]
         private void AddTarget()
         {
+            // 태현 - 출발 도착 위/경도로 초기 Yaw 도출하는 기능 추가 (마커가 방향 표시 제대로 하는지 확인하기 위해)
+            double yawDeg = CalculateYaw(startLat, startLon, endLat, endLon); // 초기 Yaw 계산
+            int yawInt = (int)(yawDeg * 100); // deg × 100 형식
+
             var target = new Target
             {
                 Id = _nextId++,
@@ -35,10 +39,30 @@ namespace TGT.ViewModels
                 Altitude = altitude,
                 CurLoc = (startLat, startLon),
                 EndLoc = (endLat, endLon),
+                Yaw = yawInt,
+                IsFocused = false, 
                 DetectTime = null
             };
 
             TargetService.Instance.AddTarget(target);
         }
+
+        private double CalculateYaw(double lat1, double lon1, double lat2, double lon2)
+        {
+            double φ1 = ToRadians(lat1);
+            double φ2 = ToRadians(lat2);
+            double Δλ = ToRadians(lon2 - lon1);
+
+            double y = Math.Sin(Δλ) * Math.Cos(φ2);
+            double x = Math.Cos(φ1) * Math.Sin(φ2) -
+                       Math.Sin(φ1) * Math.Cos(φ2) * Math.Cos(Δλ);
+
+            double θ = Math.Atan2(y, x);          // 라디안
+            double bearing = (ToDegrees(θ) + 360) % 360; // 0~360도
+            return bearing;
+        }
+
+        private static double ToRadians(double deg) => deg * Math.PI / 180.0;
+        private static double ToDegrees(double rad) => rad * 180.0 / Math.PI;
     }
 }
