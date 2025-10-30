@@ -15,12 +15,12 @@ namespace TGT.ViewModels
     public partial class TargetCreationViewModel : ObservableObject
     {
         [ObservableProperty] private char detectedType;
-        [ObservableProperty] private int speed;
+        [ObservableProperty] private int speed = 3000;
         [ObservableProperty] private int altitude;
-        [ObservableProperty] private double startLat;
-        [ObservableProperty] private double startLon;
-        [ObservableProperty] private double endLat;
-        [ObservableProperty] private double endLon;
+        [ObservableProperty] private double startLat = 35;
+        [ObservableProperty] private double startLon = 125;
+        [ObservableProperty] private double endLat = 37;
+        [ObservableProperty] private double endLon = 127;
 
         private static char _nextId = 'A';
 

@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Threading;
+using TGT.Messages;
 using TGT.Models;
 
 namespace TGT.Services
 {
     public class TargetService
     {
-        // ✅ 싱글톤 추가
         private static TargetService _instance;
         public static TargetService Instance => _instance ??= new TargetService();
 
@@ -23,7 +21,6 @@ namespace TGT.Services
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) }; // 10Hz
             _timer.Tick += UpdateTargets;
             _timer.Start();
-            
         }
 
         private void UpdateTargets(object sender, EventArgs e)
@@ -43,10 +40,22 @@ namespace TGT.Services
                 }
 
                 double step = t.Speed * 0.1 / 111000.0; // 0.1초마다 이동량 (1도=111km)
-                t.CurLoc = (t.CurLoc.Lat + dx / dist * step,
-                            t.CurLoc.Lon + dy / dist * step);
+                var newLat = t.CurLoc.Lat + dx / dist * step;
+                var newLon = t.CurLoc.Lon + dy / dist * step;
 
+                t.CurLoc = (newLat, newLon);
                 t.PathHistory.Add(t.CurLoc);
+
+                // ✅ 위치 변경 시 메시지 전송
+                WeakReferenceMessenger.Default.Send(
+                    new TargetUpdateMessage(
+                        new TargetUpdateData(
+                            t.Id.ToString(),
+                            newLat,
+                            newLon
+                        )
+                    )
+                );
             }
         }
 
@@ -67,11 +76,9 @@ namespace TGT.Services
             }
         }
 
-        private Target FindTarget(char id)
+        private Target? FindTarget(char id)
         {
-            foreach (var t in Targets)
-                if (t.Id == id) return t;
-            return null;
+            return Targets.FirstOrDefault(t => t.Id == id);
         }
     }
 }

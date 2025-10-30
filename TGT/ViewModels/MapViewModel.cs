@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows.Media;
-using System.Windows.Shapes;
-using System.Windows.Threading;
+﻿using CommunityToolkit.Mvvm.Messaging;
 using GMap.NET;
 using GMap.NET.WindowsPresentation;
+using System.Collections.ObjectModel;
+using System.Windows.Media;
+using System.Windows.Shapes;
+using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
 
@@ -13,31 +12,54 @@ namespace TGT.ViewModels
 {
     public class MapViewModel
     {
-        private readonly TargetService _targetService;
+        private readonly MapService _mapService = MapService.Instance;
+        private readonly TargetService _targetService = TargetService.Instance;
+
         public ObservableCollection<GMapMarker> TargetMarkers { get; } = new();
+
+        // ✅ Behavior에서 바인딩할 속성 추가
+        public PointLatLng Center => _mapService.Center;
+        public double DetectionRadius => _mapService.Distance;
 
         public MapViewModel()
         {
-            _targetService = TargetService.Instance;
+            // 기존 표적 데이터 등록
+            foreach (var target in _targetService.Targets)
+                AddOrUpdateMarker(target);
 
-            // 새 표적이 추가될 때마다 마커 생성
+            // 새 표적 생성 감지
             _targetService.Targets.CollectionChanged += (s, e) =>
             {
                 if (e.NewItems != null)
                 {
-                    foreach (Target t in e.NewItems)
-                        AddOrUpdateMarker(t);
+                    foreach (var item in e.NewItems.OfType<Target>())
+                        AddOrUpdateMarker(item);
                 }
             };
 
-            // 위치 갱신용 타이머 (10Hz)
-            var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
-            timer.Tick += (s, e) => UpdateMarkerPositions();
-            timer.Start();
+            // 표적 위치 업데이트 시 지도에 반영
+            WeakReferenceMessenger.Default.Register<TargetUpdateMessage>(this, (r, msg) =>
+            {
+                var data = msg.Value;
+                var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == data.TargetId);
+                if (marker != null)
+                {
+                    marker.Position = new PointLatLng(data.Latitude, data.Longitude);
+                }
+            });
         }
+
+
 
         private void AddOrUpdateMarker(Target target)
         {
+            var existing = TargetMarkers.FirstOrDefault(m => (string)m.Tag == target.Id.ToString());
+            if (existing != null)
+            {
+                existing.Position = new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon);
+                return;
+            }
+
             var marker = new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))
             {
                 Shape = new Ellipse
@@ -48,23 +70,9 @@ namespace TGT.ViewModels
                     Stroke = Brushes.Black,
                     StrokeThickness = 1.5
                 },
-                Tag = target.Id
+                Tag = target.Id.ToString()
             };
-
             TargetMarkers.Add(marker);
-        }
-
-        private void UpdateMarkerPositions()
-        {
-            foreach (var marker in TargetMarkers)
-            {
-                var id = marker.Tag?.ToString();
-                var target = _targetService.Targets.FirstOrDefault(t => t.Id.ToString() == id);
-                if (target != null)
-                {
-                    marker.Position = new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon);
-                }
-            }
         }
     }
 }
