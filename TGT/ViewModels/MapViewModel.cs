@@ -13,14 +13,13 @@ namespace TGT.ViewModels
 {
     public class MapViewModel
     {
-        private readonly MapService _mapService = MapService.Instance;
         private readonly TargetService _targetService = TargetService.Instance;
 
         public ObservableCollection<GMapMarker> TargetMarkers { get; } = new();
         public ObservableCollection<GMapRoute> TargetRoutes { get; } = new();
-
-        public PointLatLng Center => _mapService.Center;
-        public double DetectionRadius => _mapService.Distance;
+        
+        // Circle & Radius => Service 계층과 Behavior에서 관리하고, 뷰모델에서는 관리하지 않음
+        // 이유: Service 계층에는 범위 판단을 위해 필요하지만, 앱 실행 중 바뀔 일이 없기 때문에
 
         public MapViewModel()
         {
@@ -62,7 +61,7 @@ namespace TGT.ViewModels
                 RenderTransform = new RotateTransform(target.Yaw / 100.0)
             };
 
-            // ✅ 실시간 색/회전 반영
+            // 실시간 색/회전 반영
             target.PropertyChanged += (s, e) =>
             {
                 if (e.PropertyName == nameof(Target.IsFocused))
