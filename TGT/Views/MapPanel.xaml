@@ -6,19 +6,50 @@
              xmlns:behaviors="clr-namespace:TGT.Behaviors"
              xmlns:vm="clr-namespace:TGT.ViewModels">
 
-
+    <!-- ✅ MapViewModel 연결 -->
     <UserControl.DataContext>
         <vm:MapViewModel/>
     </UserControl.DataContext>
-    
-    <Grid>
-        <gmap:GMapControl x:Name="PART_Map">
-            <i:Interaction.Behaviors>
-                <behaviors:GMapBehavior
-            Markers="{Binding TargetMarkers}" 
-            Routes="{Binding TargetRoutes}"/>
 
+    <Grid>
+        <!-- 지도 -->
+        <gmap:GMapControl x:Name="PART_Map"
+                          Zoom="7"
+                          CanDragMap="True"
+                          MouseWheelZoomType="MousePositionAndCenter"
+                          MinZoom="3"
+                          MaxZoom="18"
+                          Position="{Binding Center, Mode=OneWay}">
+            <i:Interaction.Behaviors>
+                <!-- ✅ 마커 + 경로 반영 -->
+                <behaviors:GMapBehavior
+                    Markers="{Binding TargetMarkers}"
+                    Routes="{Binding TargetRoutes}"/>
             </i:Interaction.Behaviors>
         </gmap:GMapControl>
+
+        <!-- ✅ 지도 위 표적 마커 템플릿 -->
+        <ItemsControl ItemsSource="{Binding TargetMarkers}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Grid Width="40" Height="40"
+                          RenderTransformOrigin="0.5,0.5">
+                        <!-- 회전 -->
+                        <Grid.RenderTransform>
+                            <RotateTransform Angle="{Binding Shape.DataContext.YawAngle}"/>
+                        </Grid.RenderTransform>
+
+                        <!-- 🔺 표적 모양 (Focus 상태 따라 색상 변경) -->
+                        <Path Data="M 0,-15 L 10,15 L -10,15 Z"
+                              Stroke="Black"
+                              StrokeThickness="1.2">
+                            <Path.Fill>
+                                <SolidColorBrush Color="{Binding Shape.DataContext.FillColor}"/>
+                            </Path.Fill>
+                        </Path>
+                    </Grid>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </UserControl>
