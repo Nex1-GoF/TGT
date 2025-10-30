@@ -8,7 +8,6 @@ using System.Windows.Shapes;
 using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
-using TGT.Views;
 
 namespace TGT.ViewModels
 {
@@ -25,34 +24,24 @@ namespace TGT.ViewModels
 
         public MapViewModel()
         {
-            // ✅ 기존 표적 데이터 등록
             foreach (var target in _targetService.Targets)
                 AddOrUpdateMarker(target);
 
-            // ✅ 새 표적 생성 감지
             _targetService.Targets.CollectionChanged += (s, e) =>
             {
                 if (e.NewItems != null)
-                {
                     foreach (var item in e.NewItems.OfType<Target>())
                         AddOrUpdateMarker(item);
-                }
             };
 
-            // ✅ 표적 위치 업데이트 메시지 수신
             WeakReferenceMessenger.Default.Register<TargetUpdateMessage>(this, (r, msg) =>
             {
                 var data = msg.Value;
-
-                // ① 마커 위치 갱신
                 UpdateTargetPosition(data.TargetId, data.To.Lat, data.To.Lng);
-
-                // ② 새 선분(From–To) 추가
                 AddSegmentToRoute(data.TargetId, data.From, data.To);
             });
         }
 
-        // 🔸 표적 마커 추가 또는 위치 갱신
         private void AddOrUpdateMarker(Target target)
         {
             var existing = TargetMarkers.FirstOrDefault(m => (string)m.Tag == target.Id.ToString());
@@ -62,16 +51,42 @@ namespace TGT.ViewModels
                 return;
             }
 
+            // 🔺 마커 생성 (TargetMarker.xaml 대체)
+            var triangle = new Path
+            {
+                Data = Geometry.Parse("M 0,-15 L 10,15 L -10,15 Z"),
+                Stroke = Brushes.Black,
+                StrokeThickness = 1.2,
+                Fill = new SolidColorBrush(Colors.Red),
+                RenderTransformOrigin = new Point(0.5, 0.5),
+                RenderTransform = new RotateTransform(target.Yaw / 100.0)
+            };
+
+            // ✅ 실시간 색/회전 반영
+            target.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(Target.IsFocused))
+                {
+                    var brush = (SolidColorBrush)triangle.Fill;
+                    brush.Color = target.IsFocused ? Colors.Yellow : Colors.Red;
+                }
+                else if (e.PropertyName == nameof(Target.Yaw))
+                {
+                    if (triangle.RenderTransform is RotateTransform rot)
+                        rot.Angle = target.Yaw / 100.0;
+                }
+            };
+
             var marker = new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))
             {
-                Shape = new TargetMarker(target),
+                Shape = triangle,
                 Offset = new Point(-20, -20),
                 Tag = target.Id.ToString()
             };
+
             TargetMarkers.Add(marker);
         }
 
-        // 🔸 마커 위치 갱신
         private void UpdateTargetPosition(string targetId, double lat, double lon)
         {
             var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == targetId);
@@ -79,21 +94,20 @@ namespace TGT.ViewModels
                 marker.Position = new PointLatLng(lat, lon);
         }
 
-        // 🔸 From–To 기반으로 선분(GMapRoute) 추가
         private void AddSegmentToRoute(string id, PointLatLng from, PointLatLng to)
         {
-            var segment = new GMapRoute(new List<PointLatLng> { from, to })
+            var route = new GMapRoute(new List<PointLatLng> { from, to })
             {
                 Shape = new Path
                 {
                     Stroke = Brushes.Red,
-                    StrokeThickness = 3,
+                    StrokeThickness = 2,
                     Opacity = 0.8
                 },
                 Tag = $"SEG-{id}-{Guid.NewGuid()}"
             };
 
-            TargetRoutes.Add(segment);
+            TargetRoutes.Add(route);
         }
     }
 }
