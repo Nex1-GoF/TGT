@@ -47,7 +47,7 @@ namespace TGT.ViewModels
             TargetService.Instance.AddTarget(target);
         }
 
-        private double CalculateYaw(double lat1, double lon1, double lat2, double lon2)
+        private static double CalculateYaw(double lat1, double lon1, double lat2, double lon2)
         {
             double φ1 = ToRadians(lat1);
             double φ2 = ToRadians(lat2);

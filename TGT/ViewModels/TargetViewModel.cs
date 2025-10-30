@@ -35,6 +35,7 @@ namespace TGT.ViewModels
         private void SelectTarget(Target selected)
         {
             if (selected == null) return;
+            if (selected.IsMoving == false) return; // 시작 버튼 누를 때 이 함수가 실행되는것을 막기위해
 
             // 이미 선택된 항목을 클릭한 경우 → 모든 포커스 해제
             if (selected.IsFocused)
