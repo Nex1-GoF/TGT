@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using GMap.NET;
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Threading;
+using TGT.Messages;
 using TGT.Models;
 
 namespace TGT.Services
 {
     public class TargetService
     {
-        // ✅ 싱글톤 추가
         private static TargetService _instance;
         public static TargetService Instance => _instance ??= new TargetService();
 
@@ -23,10 +22,9 @@ namespace TGT.Services
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) }; // 10Hz
             _timer.Tick += UpdateTargets;
             _timer.Start();
-            
         }
 
-        private void UpdateTargets(object sender, EventArgs e)
+        private void UpdateTargets(object? sender, EventArgs e)
         {
             foreach (var t in Targets)
             {
@@ -42,13 +40,31 @@ namespace TGT.Services
                     continue;
                 }
 
-                double step = t.Speed * 0.1 / 111000.0; // 0.1초마다 이동량 (1도=111km)
-                t.CurLoc = (t.CurLoc.Lat + dx / dist * step,
-                            t.CurLoc.Lon + dy / dist * step);
+                double step = t.Speed * 0.1 / 111000.0;
+                var prev = t.CurLoc;
+                var nextLat = t.CurLoc.Lat + dx / dist * step;
+                var nextLon = t.CurLoc.Lon + dy / dist * step;
 
+                t.CurLoc = (nextLat, nextLon);
+
+                // (선택) PathHistory 유지
                 t.PathHistory.Add(t.CurLoc);
+
+                // ✅ 메시지 전송 (From → To + Altitude)
+                WeakReferenceMessenger.Default.Send(
+                    new TargetUpdateMessage(
+                        new TargetUpdateData(
+                            targetId: t.Id.ToString(),
+                            from: new PointLatLng(prev.Lat, prev.Lon),
+                            to: new PointLatLng(nextLat, nextLon),
+                            altitude: t.Altitude,
+                            pathPoints: null // or t.PathHistory.Select(p => new PointLatLng(p.Lat,p.Lon)).ToList()
+                        )
+                    )
+                );
             }
         }
+
 
         // ✅ 표적 추가 메서드
         public void AddTarget(Target target)
@@ -67,11 +83,11 @@ namespace TGT.Services
             }
         }
 
-        private Target FindTarget(char id)
+
+
+        private Target? FindTarget(char id)
         {
-            foreach (var t in Targets)
-                if (t.Id == id) return t;
-            return null;
+            return Targets.FirstOrDefault(t => t.Id == id);
         }
     }
 }

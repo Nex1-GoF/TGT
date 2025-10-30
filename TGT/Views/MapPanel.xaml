@@ -1,20 +1,24 @@
 ﻿<UserControl x:Class="TGT.Views.MapPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:TGT.Views"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             xmlns:gmap="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation">
+             xmlns:gmap="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation"
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:behaviors="clr-namespace:TGT.Behaviors"
+             xmlns:vm="clr-namespace:TGT.ViewModels">
+
+
+    <UserControl.DataContext>
+        <vm:MapViewModel/>
+    </UserControl.DataContext>
     
     <Grid>
-        <gmap:GMapControl x:Name="PART_Map"
-                  Zoom="7"
-                  MinZoom="2"
-                  MaxZoom="18"
-                  CanDragMap="True"
-                  MouseWheelZoomType="MousePositionWithoutCenter"/>
+        <gmap:GMapControl x:Name="PART_Map">
+            <i:Interaction.Behaviors>
+                <behaviors:GMapBehavior
+            Markers="{Binding TargetMarkers}" 
+            Routes="{Binding TargetRoutes}"/>
 
+            </i:Interaction.Behaviors>
+        </gmap:GMapControl>
     </Grid>
 </UserControl>

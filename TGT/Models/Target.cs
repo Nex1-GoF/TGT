@@ -40,6 +40,15 @@ namespace TGT.Models
             set { _isMoving = value; OnPropertyChanged(); }
         }
 
+            // 태현 - 우선 Focused로 선택한 표적을 확인할 수 있도록 추가
+        // 포커스 = 자동모드 일경우, 자동 모드로 수정
+        private bool _isFocused; // 포커스 테스트용으로 추가
+        public bool IsFocused
+        {
+            get => _isFocused;
+            set { _isFocused = value; OnPropertyChanged(); }
+        }
+
         public List<(double Lat, double Lon)> PathHistory { get; } = new();
 
         public event PropertyChangedEventHandler PropertyChanged;
