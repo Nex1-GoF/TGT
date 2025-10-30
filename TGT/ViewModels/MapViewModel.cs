@@ -18,18 +18,18 @@ namespace TGT.ViewModels
         private readonly TargetService _targetService = TargetService.Instance;
 
         public ObservableCollection<GMapMarker> TargetMarkers { get; } = new();
+        public ObservableCollection<GMapRoute> TargetRoutes { get; } = new();
 
-        // ✅ Behavior에서 바인딩할 속성 추가
         public PointLatLng Center => _mapService.Center;
         public double DetectionRadius => _mapService.Distance;
 
         public MapViewModel()
         {
-            // 기존 표적 데이터 등록
+            // ✅ 기존 표적 데이터 등록
             foreach (var target in _targetService.Targets)
                 AddOrUpdateMarker(target);
 
-            // 새 표적 생성 감지
+            // ✅ 새 표적 생성 감지
             _targetService.Targets.CollectionChanged += (s, e) =>
             {
                 if (e.NewItems != null)
@@ -39,20 +39,20 @@ namespace TGT.ViewModels
                 }
             };
 
-            // 표적 위치 업데이트 시 지도에 반영
+            // ✅ 표적 위치 업데이트 메시지 수신
             WeakReferenceMessenger.Default.Register<TargetUpdateMessage>(this, (r, msg) =>
             {
                 var data = msg.Value;
-                var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == data.TargetId);
-                if (marker != null)
-                {
-                    marker.Position = new PointLatLng(data.Latitude, data.Longitude);
-                }
+
+                // ① 마커 위치 갱신
+                UpdateTargetPosition(data.TargetId, data.To.Lat, data.To.Lng);
+
+                // ② 새 선분(From–To) 추가
+                AddSegmentToRoute(data.TargetId, data.From, data.To);
             });
         }
 
-
-
+        // 🔸 표적 마커 추가 또는 위치 갱신
         private void AddOrUpdateMarker(Target target)
         {
             var existing = TargetMarkers.FirstOrDefault(m => (string)m.Tag == target.Id.ToString());
@@ -69,6 +69,31 @@ namespace TGT.ViewModels
                 Tag = target.Id.ToString()
             };
             TargetMarkers.Add(marker);
+        }
+
+        // 🔸 마커 위치 갱신
+        private void UpdateTargetPosition(string targetId, double lat, double lon)
+        {
+            var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == targetId);
+            if (marker != null)
+                marker.Position = new PointLatLng(lat, lon);
+        }
+
+        // 🔸 From–To 기반으로 선분(GMapRoute) 추가
+        private void AddSegmentToRoute(string id, PointLatLng from, PointLatLng to)
+        {
+            var segment = new GMapRoute(new List<PointLatLng> { from, to })
+            {
+                Shape = new Path
+                {
+                    Stroke = Brushes.Red,
+                    StrokeThickness = 3,
+                    Opacity = 0.8
+                },
+                Tag = $"SEG-{id}-{Guid.NewGuid()}"
+            };
+
+            TargetRoutes.Add(segment);
         }
     }
 }

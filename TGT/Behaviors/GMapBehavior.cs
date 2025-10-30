@@ -1,7 +1,6 @@
 ﻿using GMap.NET;
 using GMap.NET.WindowsPresentation;
 using Microsoft.Xaml.Behaviors;
-using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -14,6 +13,7 @@ namespace TGT.Behaviors
 {
     public class GMapBehavior : Behavior<GMapControl>
     {
+        //#region 📍 Markers (표적)
         public static readonly DependencyProperty MarkersProperty =
             DependencyProperty.Register(
                 nameof(Markers),
@@ -26,44 +26,50 @@ namespace TGT.Behaviors
             get => (ObservableCollection<GMapMarker>)GetValue(MarkersProperty);
             set => SetValue(MarkersProperty, value);
         }
+        //#endregion
 
+        //#region 📈 Routes (경로)
+        public static readonly DependencyProperty RoutesProperty =
+            DependencyProperty.Register(
+                nameof(Routes),
+                typeof(ObservableCollection<GMapRoute>),
+                typeof(GMapBehavior),
+                new PropertyMetadata(null, OnRoutesChanged));
+
+        public ObservableCollection<GMapRoute> Routes
+        {
+            get => (ObservableCollection<GMapRoute>)GetValue(RoutesProperty);
+            set => SetValue(RoutesProperty, value);
+        }
+        //#endregion
+
+        private GMapPolygon? _circlePolygon;
+
+        //#region 🧭 PropertyChanged Handlers
         private static void OnMarkersChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var behavior = (GMapBehavior)d;
-            if (behavior.AssociatedObject == null) return;
 
             if (e.OldValue is ObservableCollection<GMapMarker> oldMarkers)
                 oldMarkers.CollectionChanged -= behavior.OnMarkersCollectionChanged;
-
             if (e.NewValue is ObservableCollection<GMapMarker> newMarkers)
-            {
                 newMarkers.CollectionChanged += behavior.OnMarkersCollectionChanged;
-                behavior.UpdateMarkers();
-            }
+
+            behavior.RefreshAll();
         }
 
-        private void OnMarkersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        private static void OnRoutesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            UpdateMarkers();
+            var behavior = (GMapBehavior)d;
+
+            if (e.OldValue is ObservableCollection<GMapRoute> oldRoutes)
+                oldRoutes.CollectionChanged -= behavior.OnRoutesCollectionChanged;
+            if (e.NewValue is ObservableCollection<GMapRoute> newRoutes)
+                newRoutes.CollectionChanged += behavior.OnRoutesCollectionChanged;
+
+            behavior.RefreshAll();
         }
-
-        private void UpdateMarkers()
-        {
-            if (AssociatedObject == null || Markers == null)
-                return;
-
-            // 🔥 지도에 반영
-            AssociatedObject.Markers.Clear();
-            foreach (var marker in Markers)
-                AssociatedObject.Markers.Add(marker);
-
-            if(_circlePolygon!= null)
-                AssociatedObject.Markers.Add(_circlePolygon);
-
-            AssociatedObject.InvalidateVisual();
-        }
-
-        private GMapPolygon? _circlePolygon;
+        //#endregion
 
         protected override void OnAttached()
         {
@@ -71,96 +77,72 @@ namespace TGT.Behaviors
 
             AssociatedObject.Loaded += (s, e) =>
             {
-                RefreshMarkers();
                 DrawDetectionCircle();
+                RefreshAll();
             };
-
-            if (Markers is INotifyCollectionChanged coll)
-                coll.CollectionChanged += OnMarkersChanged;
         }
 
-        protected override void OnDetaching()
-        {
-            base.OnDetaching();
-            if (Markers is INotifyCollectionChanged coll)
-                coll.CollectionChanged -= OnMarkersChanged;
-        }
+        private void OnMarkersCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshAll();
+        private void OnRoutesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RefreshAll();
 
-        private void OnMarkersChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        //#region 🗺️ 갱신 로직
+        private void RefreshAll()
         {
-            RefreshMarkers();
-        }
-
-        private void RefreshMarkers()
-        {
-            if (AssociatedObject == null || Markers == null) return;
+            if (AssociatedObject == null)
+                return;
 
             Application.Current.Dispatcher.Invoke(() =>
             {
-                // 기존 GMapMarker 목록
-                var currentMarkers = AssociatedObject.Markers.OfType<GMapMarker>().ToList();
+                AssociatedObject.Markers.Clear();
 
-                // 새로 들어온 ViewModel 마커 목록
-                var newMarkers = Markers.OfType<GMapMarker>().ToList();
-
-                // 1️ 지도에 없는 마커만 추가
-                foreach (var marker in newMarkers)
+                // 표적
+                if (Markers != null)
                 {
-                    if (!currentMarkers.Contains(marker))
-                        AssociatedObject.Markers.Add(marker);
+                    foreach (var m in Markers)
+                        AssociatedObject.Markers.Add(m);
                 }
 
-                //2️ ViewModel에서 제거된 마커는 지도에서도 제거
-                foreach (var marker in currentMarkers)
+                // 경로
+                if (Routes != null)
                 {
-                    if (!newMarkers.Contains(marker))
-                        AssociatedObject.Markers.Remove(marker);
+                    foreach (var r in Routes)
+                        AssociatedObject.Markers.Add(r);
                 }
 
-                        //3 원 표시는 반영해줘야함
+                // 탐지 원
                 if (_circlePolygon != null)
                     AssociatedObject.Markers.Add(_circlePolygon);
+
+                AssociatedObject.InvalidateVisual();
             });
         }
+        //#endregion
 
-
+        //#region 🟢 Circle
         private void DrawDetectionCircle()
         {
-            var Center = MapService.Instance.Center;
-            var DetectionRadius = MapService.Instance.Distance;
+            var center = MapService.Instance.Center;
+            var detectionRadius = MapService.Instance.Distance;
 
-            if (AssociatedObject == null || DetectionRadius <= 0) return;
+            if (AssociatedObject == null || detectionRadius <= 0) return;
 
-            var points = CreateCircle(Center, DetectionRadius, 72);
-            var polygon = new GMapPolygon(points)
+            var points = CreateCircle(center, detectionRadius, 72);
+            _circlePolygon = new GMapPolygon(points)
             {
                 Shape = new Path
                 {
                     Stroke = Brushes.LimeGreen,
                     StrokeThickness = 2,
                     Fill = Brushes.Transparent
-                }
+                },
+                Tag = "CIRCLE"
             };
-
-            _circlePolygon = polygon;
-
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                // ✅ 기존 Circle 삭제 후 새로 교체, 다른 마커는 그대로 유지
-                var oldCircle = AssociatedObject.Markers.OfType<GMapPolygon>()
-                    .FirstOrDefault(p => p == _circlePolygon);
-                if (oldCircle != null)
-                    AssociatedObject.Markers.Remove(oldCircle);
-
-                AssociatedObject.Markers.Add(polygon);
-            });
         }
 
         private static List<PointLatLng> CreateCircle(PointLatLng center, double radiusMeters, int segments)
         {
-            var points = new List<PointLatLng>();
             const double EarthRadius = 6378137.0;
-
+            var points = new List<PointLatLng>();
             double lat = ToRadians(center.Lat);
             double lon = ToRadians(center.Lng);
             double d = radiusMeters / EarthRadius;
@@ -174,11 +156,11 @@ namespace TGT.Behaviors
                                                    Math.Cos(d) - Math.Sin(lat) * Math.Sin(latPoint));
                 points.Add(new PointLatLng(ToDegrees(latPoint), ToDegrees(lonPoint)));
             }
-
             return points;
         }
 
         private static double ToRadians(double deg) => deg * Math.PI / 180.0;
         private static double ToDegrees(double rad) => rad * 180.0 / Math.PI;
+        //#endregion
     }
 }

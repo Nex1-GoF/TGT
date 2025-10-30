@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using GMap.NET;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace TGT.Services
             _timer.Start();
         }
 
-        private void UpdateTargets(object sender, EventArgs e)
+        private void UpdateTargets(object? sender, EventArgs e)
         {
             foreach (var t in Targets)
             {
@@ -39,25 +40,31 @@ namespace TGT.Services
                     continue;
                 }
 
-                double step = t.Speed * 0.1 / 111000.0; // 0.1초마다 이동량 (1도=111km)
-                var newLat = t.CurLoc.Lat + dx / dist * step;
-                var newLon = t.CurLoc.Lon + dy / dist * step;
+                double step = t.Speed * 0.1 / 111000.0;
+                var prev = t.CurLoc;
+                var nextLat = t.CurLoc.Lat + dx / dist * step;
+                var nextLon = t.CurLoc.Lon + dy / dist * step;
 
-                t.CurLoc = (newLat, newLon);
+                t.CurLoc = (nextLat, nextLon);
+
+                // (선택) PathHistory 유지
                 t.PathHistory.Add(t.CurLoc);
 
-                // ✅ 위치 변경 시 메시지 전송
+                // ✅ 메시지 전송 (From → To + Altitude)
                 WeakReferenceMessenger.Default.Send(
                     new TargetUpdateMessage(
                         new TargetUpdateData(
-                            t.Id.ToString(),
-                            newLat,
-                            newLon
+                            targetId: t.Id.ToString(),
+                            from: new PointLatLng(prev.Lat, prev.Lon),
+                            to: new PointLatLng(nextLat, nextLon),
+                            altitude: t.Altitude,
+                            pathPoints: null // or t.PathHistory.Select(p => new PointLatLng(p.Lat,p.Lon)).ToList()
                         )
                     )
                 );
             }
         }
+
 
         // ✅ 표적 추가 메서드
         public void AddTarget(Target target)

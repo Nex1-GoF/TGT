@@ -15,7 +15,8 @@
         <gmap:GMapControl x:Name="PART_Map">
             <i:Interaction.Behaviors>
                 <behaviors:GMapBehavior
-            Markers="{Binding TargetMarkers}" />
+            Markers="{Binding TargetMarkers}" 
+            Routes="{Binding TargetRoutes}"/>
 
             </i:Interaction.Behaviors>
         </gmap:GMapControl>
