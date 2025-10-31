@@ -20,7 +20,7 @@
 
             <TextBlock Text="{Binding CurLocDisplay, StringFormat='현재위치: {0}'}" Foreground="White"/>
             <TextBlock Text="{Binding EndLocDisplay, StringFormat='목표위치: {0}'}" Foreground="White"/>
-
+            <TextBlock Text="{Binding IsDetected, StringFormat='탐지여부: {0}'}" Foreground="White"/>
             <Button Content="시작"
                     Command="{Binding DataContext.StartTargetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                     CommandParameter="{Binding}"

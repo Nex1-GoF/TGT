@@ -34,23 +34,41 @@ namespace TGT.Services
                 if (!t.IsMoving)
                     continue;
 
-                // yaw는 degree*100 단위니까, 라디안으로 변환
+                        // yaw는 degree*100 단위니까, 라디안으로 변환
                 double yawRad = (t.Yaw / 100.0) * Math.PI / 180.0;
 
-                // 진행 방향 벡터 계산 (yaw 기준)
+                        // 진행 방향 벡터 계산 (yaw 기준)
                 double dx = Math.Cos(yawRad);
                 double dy = Math.Sin(yawRad);
 
-                // 이동 거리 (m/s * Δt) → degree 단위로 환산
+                        // 이동 거리 (m/s * Δt) → degree 단위로 환산
                 double step = (t.Speed * deltaTime) / EarthMetersPerDegree;
 
-                // 새로운 좌표 계산
+                        // 새로운 좌표 계산
                 var newLat = t.CurLoc.Lat + dx * step;
                 var newLon = t.CurLoc.Lon + dy * step;
-
-                // 업데이트
+          
+                        // 업데이트
                 t.CurLoc = (newLat, newLon);
+                        //탐지가 됬는지 확인
+                if(t.IsDetected)
+                { 
+                            //통신보내기
+                    
+                }
+                else
+                {
+                    //거리체크하기
+                    double dLat = (t.CurLoc.Lat - MapService.Instance.Center.Lat) * 111.0;
+                    double dLon = (t.CurLoc.Lon - MapService.Instance.Center.Lng) * 88.8;
+                    double distanceKm = Math.Sqrt(dLat * dLat + dLon * dLon);
 
+                    bool withinRange = distanceKm <= (MapService.Instance.Distance / 1000);
+                    if (withinRange)
+                    {
+                        t.IsDetected = true;
+                    }
+                }
                 // (선택) PathHistory 유지
                 t.PathHistory.Add(t.CurLoc);
 

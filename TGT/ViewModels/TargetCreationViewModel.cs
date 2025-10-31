@@ -41,7 +41,8 @@ namespace TGT.ViewModels
                 EndLoc = (endLat, endLon),
                 Yaw = yawInt,
                 IsFocused = false, 
-                DetectTime = null
+                DetectTime = null,
+                IsDetected = false
             };
 
             TargetService.Instance.AddTarget(target);
