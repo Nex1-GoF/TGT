@@ -17,7 +17,7 @@ namespace TGT.ViewModels
         [ObservableProperty] private char detectedType;
         [ObservableProperty] private int speed = 3000;
         [ObservableProperty] private int altitude;
-        [ObservableProperty] private double startLat = 35;
+        [ObservableProperty] private double startLat = 36;
         [ObservableProperty] private double startLon = 125;
         [ObservableProperty] private double endLat = 37;
         [ObservableProperty] private double endLon = 127;

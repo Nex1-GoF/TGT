@@ -23,7 +23,17 @@ namespace TGT.ViewModels
         {
             _service = service;
         }
+        [RelayCommand]
+        private void RemoveTarget(Target target)
+        {
+            _service.RemoveTarget(target);
+        }
 
+        [RelayCommand]
+        private void StartAll()
+        {
+            _service.StartAll();
+        }
         [RelayCommand]
         private void StartTarget(Target t)
         {
@@ -51,6 +61,7 @@ namespace TGT.ViewModels
 
             selected.IsFocused = true;
         }
+
 
     }
 }
