@@ -29,8 +29,16 @@ namespace TGT.ViewModels
             _targetService.Targets.CollectionChanged += (s, e) =>
             {
                 if (e.NewItems != null)
+                {
                     foreach (var item in e.NewItems.OfType<Target>())
                         AddOrUpdateMarker(item);
+                }
+
+                if (e.OldItems != null)
+                {
+                    foreach (var item in e.OldItems.OfType<Target>())
+                        RemoveMarker(item.Id.ToString());
+                }
             };
 
             WeakReferenceMessenger.Default.Register<TargetUpdateMessage>(this, (r, msg) =>
@@ -39,6 +47,7 @@ namespace TGT.ViewModels
                 UpdateTargetPosition(data.TargetId, data.To.Lat, data.To.Lng);
                 AddSegmentToRoute(data.TargetId, data.From, data.To);
             });
+
         }
 
         private void AddOrUpdateMarker(Target target)
@@ -59,6 +68,17 @@ namespace TGT.ViewModels
                 Fill = new SolidColorBrush(Colors.Red),
                 RenderTransformOrigin = new Point(0.5, 0.5),
                 RenderTransform = new RotateTransform(target.Yaw / 100.0)
+            };
+
+            triangle.MouseLeftButtonDown += (s, e) =>
+            {
+                e.Handled = true; // 이벤트 버블링 방지
+                var service = TargetService.Instance;
+
+                // 이미 선택된 타겟이면 포커스 해제
+                //TargetService.Instance.SelectTarget(target);
+
+
             };
 
             // 실시간 색/회전 반영
@@ -91,6 +111,13 @@ namespace TGT.ViewModels
             var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == targetId);
             if (marker != null)
                 marker.Position = new PointLatLng(lat, lon);
+        }
+
+        private void RemoveMarker(string targetId)
+        {
+            var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == targetId);
+            if (marker != null) 
+                TargetMarkers.Remove(marker);
         }
 
         private void AddSegmentToRoute(string id, PointLatLng from, PointLatLng to)
