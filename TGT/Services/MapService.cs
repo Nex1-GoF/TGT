@@ -23,129 +23,67 @@ namespace TGT.Services
         public double Distance { get; set; } = 250_000;
 
         // 🔹 실제 지도에 표시될 마커/경로 컬렉션
-        public ObservableCollection<GMapMarker> TargetMarkers { get; } = new();
-        public ObservableCollection<GMapRoute> TargetRoutes { get; } = new();
+  
 
         private readonly TargetService _targetService = TargetService.Instance;
 
         private MapService() { }
 
-        // ============================================================
-        // ✅ GMapControl 초기화
-        // ============================================================
+        
         public void Initialize(GMapControl map)
         {
+            // 맵 초기화
             _map = map;
+            _map.MapProvider = GMap.NET.MapProviders.GoogleMapProvider.Instance;
+            _map.MinZoom = 2;
+            _map.MaxZoom = 18;
+            _map.Zoom = 8;
+            _map.Position = Center;
+            _map.CanDragMap = false;
+            
+            // 원 그리기
         }
 
-        // ============================================================
-        // ✅ 마커 추가 or 갱신
-        // ============================================================
-        public void AddOrUpdateMarker(Target target)
+        public GMapPolygon? DrawDetectionCircle()
         {
-            var existing = TargetMarkers.FirstOrDefault(m => (string)m.Tag == target.Id.ToString());
-            if (existing != null)
-            {
-                existing.Position = new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon);
-                return;
-            }
+            if (_map == null || Distance <= 0) return null;
 
-            var marker = CreateMarker(target);
-            TargetMarkers.Add(marker);
-        }
-
-        // ============================================================
-        // ✅ 마커 생성
-        // ============================================================
-        private GMapMarker CreateMarker(Target target)
-        {
-            var triangle = new Path
-            {
-                Data = Geometry.Parse("M 0,-15 L 10,15 L -10,15 Z"),
-                Stroke = Brushes.Black,
-                StrokeThickness = 1.2,
-                Fill = new SolidColorBrush(Colors.Red),
-                RenderTransformOrigin = new Point(0.5, 0.5),
-                RenderTransform = new RotateTransform(target.Yaw / 100.0),
-                Cursor = Cursors.Hand,
-                IsHitTestVisible = true
-            };
-
-            triangle.MouseLeftButtonUp += (s, e) =>
-            {
-                e.Handled = true;
-                _targetService.SelectTarget(target);
-                Console.WriteLine($"[MapService] Target {target.Id} clicked");
-            };
-
-            target.PropertyChanged += (s, e) =>
-            {
-                //if (e.PropertyName == nameof(Target.IsFocused))
-                //{
-                //    var brush = (SolidColorBrush)triangle.Fill;
-                //    brush.Color = target.IsFocused ? Colors.Yellow : Colors.Red;
-                //}
-                //else if (e.PropertyName == nameof(Target.Yaw))
-                //{
-                //    if (triangle.RenderTransform is RotateTransform rot)
-                //        rot.Angle = target.Yaw / 100.0;
-                //}
-            };
-
-            return new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))
-            {
-                Shape = triangle,
-                Offset = new Point(-20, -20),
-                Tag = target.Id.ToString()
-            };
-        }
-
-        // ============================================================
-        // ✅ 마커 위치 업데이트
-        // ============================================================
-        public void UpdateTargetPosition(string targetId, double lat, double lon)
-        {
-            var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == targetId);
-            if (marker != null)
-                marker.Position = new PointLatLng(lat, lon);
-        }
-
-        // ============================================================
-        // ✅ 마커 제거
-        // ============================================================
-        public void RemoveMarker(string targetId)
-        {
-            var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == targetId);
-            if (marker != null)
-                TargetMarkers.Remove(marker);
-        }
-
-        // ============================================================
-        // ✅ 경로(선분) 추가
-        // ============================================================
-        public void AddSegmentToRoute(string id, PointLatLng from, PointLatLng to)
-        {
-            var route = new GMapRoute(new List<PointLatLng> { from, to })
+            var points = CreateCircle(Center, Distance, 72);
+            GMapPolygon CirclePolygon = new GMapPolygon(points)
             {
                 Shape = new Path
                 {
-                    Stroke = Brushes.Red,
+                    Stroke = Brushes.LimeGreen,
                     StrokeThickness = 2,
-                    Opacity = 0.8
-                },
-                Tag = $"SEG-{id}-{Guid.NewGuid()}"
+                    Fill = Brushes.Transparent
+                }
             };
-
-            TargetRoutes.Add(route);
+            return CirclePolygon;
         }
 
-        // ============================================================
-        // ✅ 전체 초기화
-        // ============================================================
-        public void ClearAll()
+        
+
+        private static List<PointLatLng> CreateCircle(PointLatLng center, double radiusMeters, int segments)
         {
-            TargetMarkers.Clear();
-            TargetRoutes.Clear();
+            const double EarthRadius = 6378137.0;
+            var points = new List<PointLatLng>();
+            double lat = ToRadians(center.Lat);
+            double lon = ToRadians(center.Lng);
+            double d = radiusMeters / EarthRadius;
+
+            for (int i = 0; i <= segments; i++)
+            {
+                double angle = 2 * Math.PI * i / segments;
+                double latPoint = Math.Asin(Math.Sin(lat) * Math.Cos(d) +
+                                            Math.Cos(lat) * Math.Sin(d) * Math.Cos(angle));
+                double lonPoint = lon + Math.Atan2(Math.Sin(angle) * Math.Sin(d) * Math.Cos(lat),
+                                                   Math.Cos(d) - Math.Sin(lat) * Math.Sin(latPoint));
+                points.Add(new PointLatLng(ToDegrees(latPoint), ToDegrees(lonPoint)));
+            }
+            return points;
         }
+
+        private static double ToRadians(double deg) => deg * Math.PI / 180.0;
+        private static double ToDegrees(double rad) => rad * 180.0 / Math.PI;
     }
 }

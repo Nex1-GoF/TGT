@@ -1,12 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
+using GMap.NET;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
 using TGT.Views;
@@ -16,17 +18,40 @@ namespace TGT.ViewModels
 {
     public partial class TargetCreationViewModel : ObservableObject
     {
-        private bool _isStartSet = true;
 
         [ObservableProperty] private char detectedType;
         [ObservableProperty] private int speed = 3000;
         [ObservableProperty] private int altitude;
-        [ObservableProperty] private double startLat = 0;
-        [ObservableProperty] private double startLon = 0;
-        [ObservableProperty] private double endLat = 0;
-        [ObservableProperty] private double endLon = 0;
+        [ObservableProperty] private double startLat = 36;
+        [ObservableProperty] private double startLon = 127;
+        [ObservableProperty] private double endLat = 37;
+        [ObservableProperty] private double endLon = 127;
 
         private static char _nextId = 'A';
+
+        public TargetCreationViewModel()
+        {
+            WeakReferenceMessenger.Default.Register<MapClickMessage>(this, (r, msg) =>
+            {
+                var data = msg.Value;
+                SetCommand(data.LatLng, data.IsFirst);
+            });
+        }
+
+        private void SetCommand(PointLatLng latLng , bool IsFirst)
+        {
+            if (IsFirst == true)
+            {
+                StartLat = latLng.Lat;
+                StartLon = latLng.Lng;
+
+            }
+            else
+            {
+                EndLat = latLng.Lat;
+                EndLon = latLng.Lng;
+            }
+        }
 
         [RelayCommand]
         private void AddTarget()
@@ -51,32 +76,10 @@ namespace TGT.ViewModels
 
             TargetService.Instance.AddTarget(target);
 
-            MapService.Instance.ClearAll();
-            _isStartSet = false;
-
             StartLat = 0;
             StartLon = 0;
             EndLat = 0;
             EndLon = 0;
-        }
-
-        public TargetCreationViewModel()
-        {
-            WeakReferenceMessenger.Default.Register<MapClickMessage>(this, (r, m) =>
-            {
-                if(_isStartSet == true)
-                {
-                    StartLat = m.Location.Lat;
-                    StartLon = m.Location.Lng;
-                    
-                } else
-                {
-                    EndLat = m.Location.Lat;
-                    EndLon = m.Location.Lng;
-                }
-                //MapService.Instance.AddOrUpdateMarker(target);
-                _isStartSet = !_isStartSet;
-            });
         }
 
         private static double CalculateYaw(double lat1, double lon1, double lat2, double lon2)

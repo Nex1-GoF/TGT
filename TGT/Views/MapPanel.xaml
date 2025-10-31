@@ -3,23 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:gmap="clr-namespace:GMap.NET.WindowsPresentation;assembly=GMap.NET.WindowsPresentation"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:behaviors="clr-namespace:TGT.Behaviors"
              xmlns:vm="clr-namespace:TGT.ViewModels">
 
-    <!-- ✅ MapViewModel 연결 -->
-    <UserControl.DataContext>
-        <vm:MapViewModel/>
-    </UserControl.DataContext>
-
     <Grid>
-        <!-- 지도 -->
-        <gmap:GMapControl x:Name="PART_Map">
-            <i:Interaction.Behaviors>
-                <!-- 마커 + 경로 반영 -->
-                <behaviors:GMapBehavior
-                    Markers="{Binding TargetMarkers}"
-                    Routes="{Binding TargetRoutes}"/>
-            </i:Interaction.Behaviors>
-        </gmap:GMapControl>
+        <gmap:GMapControl x:Name="PART_Map"/>
     </Grid>
 </UserControl>

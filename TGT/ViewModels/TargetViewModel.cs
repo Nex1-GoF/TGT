@@ -18,8 +18,9 @@ namespace TGT.ViewModels
         private readonly TargetService _service;
         public ObservableCollection<Target> Targets => _service.Targets;
 
+
         [ObservableProperty]
-        static public Target selectedTarget;
+        static public Target? selectedTarget;
 
         public TargetViewModel(TargetService service)
         {
