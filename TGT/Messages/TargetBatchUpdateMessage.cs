@@ -7,9 +7,9 @@ namespace TGT.Messages
     /// <summary>
     /// 표적의 위치(또는 상태)가 갱신되었을 때 전송되는 메시지
     /// </summary>
-    public class TargetUpdateMessage : ValueChangedMessage<TargetUpdateData>
+    public class TargetBatchUpdateMessage : ValueChangedMessage<List<TargetUpdateData>>
     {
-        public TargetUpdateMessage(TargetUpdateData value) : base(value) { }
+        public TargetBatchUpdateMessage(List<TargetUpdateData> value) : base(value) { }
     }
 
     /// <summary>
