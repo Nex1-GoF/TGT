@@ -15,6 +15,12 @@ namespace TGT.ViewModels
     {
         private readonly TargetService _targetService = TargetService.Instance;
 
+       
+        public PointLatLng Center = MapService.Instance.Center;
+        public double Distance = MapService.Instance.Distance;
+
+
+
         public ObservableCollection<GMapMarker> TargetMarkers { get; } = new();
         public ObservableCollection<GMapRoute> TargetRoutes { get; } = new();
         
@@ -23,6 +29,7 @@ namespace TGT.ViewModels
 
         public MapViewModel()
         {
+      
             foreach (var target in _targetService.Targets)
                 AddOrUpdateMarker(target);
 

@@ -13,7 +13,7 @@ namespace TGT.Behaviors
 {
     public class GMapBehavior : Behavior<GMapControl>
     {
-        //#region 📍 Markers (표적)
+        //#region Markers (표적)
         public static readonly DependencyProperty MarkersProperty =
             DependencyProperty.Register(
                 nameof(Markers),

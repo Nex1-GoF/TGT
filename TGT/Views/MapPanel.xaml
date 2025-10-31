@@ -13,13 +13,7 @@
 
     <Grid>
         <!-- 지도 -->
-        <gmap:GMapControl x:Name="PART_Map"
-                          Zoom="7"
-                          CanDragMap="True"
-                          MouseWheelZoomType="MousePositionAndCenter"
-                          MinZoom="3"
-                          MaxZoom="18"
-                          Position="{Binding Center, Mode=OneWay}">
+        <gmap:GMapControl x:Name="PART_Map">
             <i:Interaction.Behaviors>
                 <!-- 마커 + 경로 반영 -->
                 <behaviors:GMapBehavior
@@ -27,6 +21,5 @@
                     Routes="{Binding TargetRoutes}"/>
             </i:Interaction.Behaviors>
         </gmap:GMapControl>
-
     </Grid>
 </UserControl>

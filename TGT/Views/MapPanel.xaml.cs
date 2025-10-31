@@ -32,7 +32,8 @@ namespace TGT.Views
             PART_Map.MinZoom = 2;
             PART_Map.MaxZoom = 18;
             PART_Map.Zoom = 8;
-            PART_Map.Position = TGT.Services.MapService.Instance.Center;
+            PART_Map.Position = _viewModel.Center;
+            PART_Map.CanDragMap = true;
 
         }
     }

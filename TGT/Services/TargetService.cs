@@ -73,7 +73,7 @@ namespace TGT.Services
                 // (선택) PathHistory 유지
                 t.PathHistory.Add(t.CurLoc);
 
-                // ✅ 메시지 전송(From → To +Altitude)
+                // 메시지 전송(From → To +Altitude)
                 WeakReferenceMessenger.Default.Send(
                     new TargetUpdateMessage(
                         new TargetUpdateData(
@@ -89,7 +89,7 @@ namespace TGT.Services
         }
 
 
-        // ✅ 표적 추가 메서드
+        // 표적 추가 메서드
         public void AddTarget(Target target)
         {
             Targets.Add(target);
