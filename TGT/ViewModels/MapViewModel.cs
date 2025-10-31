@@ -74,33 +74,33 @@ namespace TGT.ViewModels
                 StrokeThickness = 1.2,
                 Fill = new SolidColorBrush(Colors.Red),
                 RenderTransformOrigin = new Point(0.5, 0.5),
-                RenderTransform = new RotateTransform(target.Yaw / 100.0)
+                RenderTransform = new RotateTransform(target.Yaw / 100.0),
+                IsHitTestVisible = true // ✅ 클릭 활성화
             };
 
             triangle.MouseLeftButtonDown += (s, e) =>
             {
-                e.Handled = true; // 이벤트 버블링 방지
-                var service = TargetService.Instance;
+                e.Handled = true; // GMapControl이 잡지 않게 방지
 
-                // 이미 선택된 타겟이면 포커스 해제
-                //TargetService.Instance.SelectTarget(target);
-
-
+                // 모든 타겟 포커스 해제 후 자신만 활성화
+                
+                _targetService.SelectTarget(target);
+                Console.WriteLine($"[Click] Target {target.Id} clicked");
             };
 
             // 실시간 색/회전 반영
             target.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(Target.IsFocused))
-                {
-                    var brush = (SolidColorBrush)triangle.Fill;
-                    brush.Color = target.IsFocused ? Colors.Yellow : Colors.Red;
-                }
-                else if (e.PropertyName == nameof(Target.Yaw))
-                {
-                    if (triangle.RenderTransform is RotateTransform rot)
-                        rot.Angle = target.Yaw / 100.0;
-                }
+                //if (e.PropertyName == nameof(Target.IsFocused))
+                //{
+                //    var brush = (SolidColorBrush)triangle.Fill;
+                //    brush.Color = target.IsFocused ? Colors.Yellow : Colors.Red;
+                //}
+                //else if (e.PropertyName == nameof(Target.Yaw))
+                //{
+                //    if (triangle.RenderTransform is RotateTransform rot)
+                //        rot.Angle = target.Yaw / 100.0;
+                //}
             };
 
             var marker = new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))

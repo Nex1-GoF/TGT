@@ -19,7 +19,7 @@ namespace TGT.ViewModels
         public ObservableCollection<Target> Targets => _service.Targets;
 
         [ObservableProperty]
-        private Target selectedTarget;
+        static public Target selectedTarget;
 
         public TargetViewModel(TargetService service)
         {
@@ -47,7 +47,7 @@ namespace TGT.ViewModels
         [RelayCommand]
         private void SelectTarget(Target selected)
         {
-            SelectedTarget = selected;
+            _service.SelectTarget(selected);
         }
         public void HandleKeyInput(Key key)
         {

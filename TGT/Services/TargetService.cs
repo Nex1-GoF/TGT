@@ -122,5 +122,15 @@ namespace TGT.Services
             foreach (var t in Targets)
                 t.IsMoving = true;
         }
+        public void SelectTarget(Target selected)
+        {
+            TargetViewModel.selectedTarget = selected;
+        }
+
+        public Target GetSelectTarget()
+        {
+            return TargetViewModel.selectedTarget;
+        }
+
     }
 }

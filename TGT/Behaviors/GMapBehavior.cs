@@ -99,7 +99,9 @@ namespace TGT.Behaviors
                 if (Markers != null)
                 {
                     foreach (var m in Markers)
+                    {
                         AssociatedObject.Markers.Add(m);
+                    }
                 }
 
                 // 경로
