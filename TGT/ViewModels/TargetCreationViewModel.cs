@@ -40,7 +40,6 @@ namespace TGT.ViewModels
                 CurLoc = (startLat, startLon),
                 EndLoc = (endLat, endLon),
                 Yaw = yawInt,
-                IsFocused = false, 
                 DetectTime = null,
                 IsDetected = false
             };

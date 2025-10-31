@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -19,6 +20,13 @@ namespace TGT
         public MainWindow()
         {
             InitializeComponent();
+            PreviewKeyDown += OnPreviewKeyDown;
+        }
+
+        private void OnPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            // 중앙 이벤트 전달
+            InputEventBroker.RaiseKeyInput(e.Key);
         }
     }
 }

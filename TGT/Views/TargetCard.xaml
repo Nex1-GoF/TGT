@@ -16,6 +16,7 @@
             <TextBlock Text="{Binding Id}" Foreground="White" FontWeight="Bold" FontSize="14"/>
             <TextBlock Text="{Binding DetectedType, StringFormat='모델: {0}'}" Foreground="White"/>
             <TextBlock Text="{Binding Speed, StringFormat='속도: {0} m/s'}" Foreground="White"/>
+            <TextBlock Text="{Binding CurYawDisplay, StringFormat='Yaw: {0} m/s'}" Foreground="White"/>
             <TextBlock Text="{Binding Altitude, StringFormat='고도: {0} m'}" Foreground="White" Margin="0,0,0,6"/>
 
             <TextBlock Text="{Binding CurLocDisplay, StringFormat='현재위치: {0}'}" Foreground="White"/>

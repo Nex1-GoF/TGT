@@ -7,6 +7,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
 using TGT.Messages;
 using TGT.Models;
+using TGT.ViewModels;
 
 namespace TGT.Services
 {
@@ -104,26 +105,6 @@ namespace TGT.Services
                 target.PathHistory.Clear();
                 target.PathHistory.Add(target.CurLoc);
             }
-        }
-
-        public void SelectTarget(Target selected)
-        {
-            if (selected == null) return;
-            if (selected.IsMoving == false) return; // 시작 버튼 누를 때 이 함수가 실행되는것을 막기위해
-
-            // 이미 선택된 항목을 클릭한 경우 → 모든 포커스 해제
-            if (selected.IsFocused)
-            {
-                foreach (var t in Targets)
-                    t.IsFocused = false;
-                return;
-            }
-
-            // 새로 선택된 항목이라면 나머지 해제 후 현재만 true
-            foreach (var t in Targets)
-                t.IsFocused = false;
-
-            selected.IsFocused = true;
         }
 
         private Target? FindTarget(char id)

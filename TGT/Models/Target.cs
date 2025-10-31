@@ -13,8 +13,21 @@ namespace TGT.Models
         public char Id { get; set; }
         public char DetectedType { get; set; }
         public int Speed { get; set; }     // m/s
-        public int Altitude { get; set; }  // m
-        public int Yaw { get; set; }       // deg*100
+        public int Altitude { get; set; }  // mprivate int _yaw;
+        private int _yaw;
+        public int Yaw
+        {
+            get => _yaw;
+            set
+            {
+                if (_yaw != value)
+                {
+                    _yaw = value;
+                    OnPropertyChanged(); // Yaw 바뀜을 알림
+                    OnPropertyChanged(nameof(CurYawDisplay));
+                }
+            }
+        }
         public (double Lat, double Lon) EndLoc { get; set; }
         public DateTime? DetectTime { get; set; }
 
@@ -29,7 +42,7 @@ namespace TGT.Models
                 OnPropertyChanged(nameof(CurLocDisplay));
             }
         }
-
+        public string CurYawDisplay => $"{Yaw:F5}";
         public string CurLocDisplay => $"{CurLoc.Lat:F5}, {CurLoc.Lon:F5}";
         public string EndLocDisplay => $"{EndLoc.Lat:F5}, {EndLoc.Lon:F5}";
 
@@ -45,15 +58,6 @@ namespace TGT.Models
         public bool IsDetected {
             get => _isDetected;
             set { _isDetected = value; OnPropertyChanged(); }
-        }
-
-        // 태현 - 우선 Focused로 선택한 표적을 확인할 수 있도록 추가
-        // 포커스 = 자동모드 일경우, 자동 모드로 수정
-        private bool _isFocused; // 포커스 테스트용으로 추가
-        public bool IsFocused
-        {
-            get => _isFocused;
-            set { _isFocused = value; OnPropertyChanged(); }
         }
 
         public List<(double Lat, double Lon)> PathHistory { get; } = new();
