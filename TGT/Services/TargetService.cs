@@ -59,7 +59,7 @@ namespace TGT.Services
                 // 탐지 여부 확인
                 if (t.IsDetected)
                 {
-                    // TODO: 통신 보내기 (여기에 로직)
+                    //감지된 타겟 배열에 넣기(통신용!)
                 }
                 else
                 {
@@ -85,6 +85,7 @@ namespace TGT.Services
                     pathPoints: null // 필요 시 t.PathHistory 변환 가능
                 ));
             }
+            // TODO: 통신 보내기 (여기에 로직)
 
             // ✅ 루프 바깥에서 단 한 번만 메시지 전송
             if (updatedTargets.Count > 0)

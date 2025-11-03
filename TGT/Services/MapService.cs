@@ -24,25 +24,27 @@ namespace TGT.Services
 
         // 🔹 실제 지도에 표시될 마커/경로 컬렉션
   
-
-        private readonly TargetService _targetService = TargetService.Instance;
-
         private MapService() { }
 
-        
+
         public void Initialize(GMapControl map)
         {
             // 맵 초기화
             _map = map;
-            _map.MapProvider = GMap.NET.MapProviders.GoogleMapProvider.Instance;
+
+            // ✅ 지도 제공자: OpenStreetMap
+            _map.MapProvider = GMap.NET.MapProviders.OpenStreetMapProvider.Instance;
+            GMap.NET.GMaps.Instance.Mode = GMap.NET.AccessMode.ServerAndCache;
             _map.MinZoom = 2;
-            _map.MaxZoom = 18;
+            _map.MaxZoom = 20; // OpenStreetMap은 최대 20까지 가능
             _map.Zoom = 8;
             _map.Position = Center;
-            _map.CanDragMap = false;
-            
-            // 원 그리기
+            _map.CanDragMap = true;          // 드래그 가능
+            _map.MouseWheelZoomType = GMap.NET.MouseWheelZoomType.MousePositionAndCenter;
+            _map.IgnoreMarkerOnMouseWheel = true; // 마커 위에서도 휠 줌 동작
+            _map.MouseWheelZoomEnabled = true;    // 마우스 휠로 줌 가능
         }
+
 
         public GMapPolygon? DrawDetectionCircle()
         {
