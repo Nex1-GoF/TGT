@@ -131,29 +131,44 @@ namespace TGT.Services
             _timer.Start();
         }
 
-        private void SendtoC2(Target target)
-        {
-            /*
-             (string srcId, string desId, UInt32 seq, byte msgSize,'
-                                string detectedId, Int32 latitude, Int32 longitude,Int16 altitude,Int16 yaw,'
-                                UInt64 detectedTime,UInt16 speed, byte detectedType)
-             */
+        //private void SendtoC2(Target target)
+        //{
+        //    /*
+        //     (string srcId, string desId, UInt32 seq, byte msgSize,'
+        //                        string detectedId, Int32 latitude, Int32 longitude,Int16 altitude,Int16 yaw,'
+        //                        UInt64 detectedTime,UInt16 speed, byte detectedType)
+        //     */
 
+        //    TgtInfoPakcet packet = new TgtInfoPakcet("T001", "C001", 0, 40,
+        //                                            $"E00{target.Id}", (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7), (Int32)target.Altitude,
+        //                                            (Int16)target.Yaw,
+        //                                            target.DetectTime.HasValue ? (UInt64)(target.DetectTime.Value - DateTime.UnixEpoch).TotalMilliseconds : 0UL,
+        //                                            (UInt16)target.Speed, (byte)target.DetectedType);
+
+        //    socket.SendTo(packet.Serialize(), ep);
+        //    //juyeon.loc = t.CurLoc;
+        //    //juyeon.speed = t.Speed;
+        //    //juyeon.yaw = t.Yaw;
+        //    //juyeon암호화!
+        //    // realsend(juyeon);
+
+        //}
+
+        private async Task SendtoC2Async(Target target)
+        {
             TgtInfoPakcet packet = new TgtInfoPakcet("T001", "C001", 0, 40,
                                                     $"E00{target.Id}", (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7), (Int32)target.Altitude,
                                                     (Int16)target.Yaw,
                                                     target.DetectTime.HasValue ? (UInt64)(target.DetectTime.Value - DateTime.UnixEpoch).TotalMilliseconds : 0UL,
                                                     (UInt16)target.Speed, (byte)target.DetectedType);
+            var buffer = packet.Serialize();
 
-            socket.SendTo(packet.Serialize(), ep);
-            //juyeon.loc = t.CurLoc;
-            //juyeon.speed = t.Speed;
-            //juyeon.yaw = t.Yaw;
-            //juyeon암호화!
-            // realsend(juyeon);
 
+            await socket.SendToAsync(new ArraySegment<byte>(buffer), SocketFlags.None, ep);
         }
-        private void UpdateTargets(object? sender, EventArgs e)
+
+
+        private async void UpdateTargets(object? sender, EventArgs e)
         {
             const double EarthMetersPerDegree = 111_000.0; // 위도/경도 변환용 근사값
             const double deltaTime = 0.01; // 100ms (Timer 주기)
@@ -187,7 +202,8 @@ namespace TGT.Services
                 if (t.IsDetected)
                 {
                     // TODO: 통신 보내기 (여기에 로직)
-                    SendtoC2(t);
+                    //SendtoC2(t);
+                    await SendtoC2Async(t);
                 }
                 else
                 {
