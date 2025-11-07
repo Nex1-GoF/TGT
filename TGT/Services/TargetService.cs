@@ -22,15 +22,24 @@ namespace TGT.Services
 
         private TargetService()
         {
-            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) }; // 10Hz
+            _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1000) }; // 10Hz
             _timer.Tick += UpdateTargets;
             _timer.Start();
         }
+        private void SendtoC2(Target target)
+        {
+            //juyeon.loc = t.CurLoc;
+            //juyeon.speed = t.Speed;
+            //juyeon.yaw = t.Yaw;
+            //juyeon암호화!
+            // realsend(juyeon);
 
+        }
         private void UpdateTargets(object? sender, EventArgs e)
         {
             const double EarthMetersPerDegree = 111_000.0; // 위도/경도 변환용 근사값
-            const double deltaTime = 0.1; // 100ms (Timer 주기)
+            const double deltaTime = 0.01; // 100ms (Timer 주기)
+
 
             var updatedTargets = new List<TargetUpdateData>(); // ✅ 한 번에 보낼 데이터 모음
 
@@ -60,6 +69,7 @@ namespace TGT.Services
                 if (t.IsDetected)
                 {
                     // TODO: 통신 보내기 (여기에 로직)
+                    SendtoC2(t);
                 }
                 else
                 {
