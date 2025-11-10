@@ -18,6 +18,7 @@ namespace TGT.Views
     public partial class MapPanel : UserControl
     {
         private readonly MapViewModel _viewModel;
+        private readonly FpsCounter _fpsCounter;
 
         public MapPanel()
         {
@@ -25,7 +26,7 @@ namespace TGT.Views
             _viewModel = new MapViewModel(PART_Map);
             DataContext = _viewModel;
             PART_Map.MouseLeftButtonUp += OnMapClick; // View 계층에서 한 이유: ViewModel을 호출해야하기 때문에
-
+            _fpsCounter = new FpsCounter();
         }
 
         private void OnMapClick(object sender, MouseButtonEventArgs e)

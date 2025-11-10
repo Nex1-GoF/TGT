@@ -230,7 +230,7 @@ namespace TGT.Services
                 y += dy;
 
                 double distance = Math.Sqrt(dx * dx + dy * dy);
-                Debug.WriteLine($"Target {t.Id} 이동거리 = {distance:F4} m");
+                //Debug.WriteLine($"Target {t.Id} 이동거리 = {distance:F4} m");
 
                 //--------------------------------------------------
                 // ③ (x,y) → 위도/경도 복원
