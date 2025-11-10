@@ -2,12 +2,13 @@
 using GMap.NET;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using System.Windows.Controls.Primitives;
 using System.Windows.Threading;
-using System.Net.Sockets;
-using System.Net;
-using System.Text;
 using TGT.Messages;
 using TGT.Models;
 using TGT.ViewModels;
@@ -167,66 +168,87 @@ namespace TGT.Services
             await socket.SendToAsync(new ArraySegment<byte>(buffer), SocketFlags.None, ep);
         }
 
+        private (double x, double y) LatLonToXY(double lat, double lon, double lat0, double lon0)
+        {
+            const double R = 6_378_137.0; // 지구 반경
+            double lat0Rad = lat0 * Math.PI / 180.0;
 
+            double dLat = (lat - lat0) * Math.PI / 180.0;
+            double dLon = (lon - lon0) * Math.PI / 180.0;
+
+            double x = dLon * R * Math.Cos(lat0Rad);  // 동쪽
+            double y = dLat * R;                      // 북쪽
+
+            return (x, y);
+        }
+
+        /// <summary>
+        /// 시뮬레이션 좌표(x,y) → 위도/경도 변환
+        /// </summary>
+        private (double lat, double lon) XYToLatLon(double x, double y, double lat0, double lon0)
+        {
+            const double R = 6_378_137.0;
+            double lat0Rad = lat0 * Math.PI / 180.0;
+
+            double newLat = lat0 + (y / R) * (180.0 / Math.PI);
+            double newLon = lon0 + (x / (R * Math.Cos(lat0Rad))) * (180.0 / Math.PI);
+
+            return (newLat, newLon);
+        }
         private async void UpdateTargets(object? sender, EventArgs e)
         {
-            const double R = 6_378_137.0;     // 지구 반경 (m)
-            const double dt = 0.01;           // 10ms
+            const double dt = 0.01;             // 10ms
+            const double R = 6_378_137.0;       // 지구 반경(m)
             var updatedTargets = new List<TargetUpdateData>();
 
-            // 서울 기준점 (x,y=0,0)
+            // 기준점 (서울)
             double lat0 = MapService.Instance.Center.Lat;
             double lon0 = MapService.Instance.Center.Lng;
-
-            double lat0Rad = lat0 * Math.PI / 180.0;
 
             foreach (var t in Targets)
             {
                 if (!t.IsMoving)
                     continue;
 
-                double lat = t.CurLoc.Lat;
-                double lon = t.CurLoc.Lon;
+                double curLat = t.CurLoc.Lat;
+                double curLon = t.CurLoc.Lon;
 
-                //------------------------------------------------------
-                // (1) 위도/경도 → (x,y)
-                //------------------------------------------------------
-                double dLat = (lat - lat0) * Math.PI / 180.0;
-                double dLon = (lon - lon0) * Math.PI / 180.0;
+                //--------------------------------------------------
+                // ① 위도/경도 → 평면좌표(x, y) 변환
+                //--------------------------------------------------
+                (double x, double y) = LatLonToXY(curLat, curLon, lat0, lon0);
 
-                double x = dLon * R * Math.Cos(lat0Rad);   // 동쪽(m)
-                double y = dLat * R;                       // 북쪽(m)
-
-                //------------------------------------------------------
-                // (2) 이동 적용
-                //------------------------------------------------------
+                //--------------------------------------------------
+                // ② 이동 적용 (m 단위)
+                //--------------------------------------------------
                 double headingRad = (t.Yaw / 100.0) * Math.PI / 180.0;
 
-                // ✅ 항법 좌표계: 0°=북, 90°=동
-                double dx = Math.Sin(headingRad) * t.Speed * dt *10; // 동쪽
-                double dy = Math.Cos(headingRad) * t.Speed * dt*10; // 북쪽
+                double dx = Math.Sin(headingRad) * t.Speed * dt;   // 동
+                double dy = Math.Cos(headingRad) * t.Speed * dt;   // 북
 
                 x += dx;
                 y += dy;
 
-                //------------------------------------------------------
-                // (3) (x,y) → 위도/경도 복원
-                //------------------------------------------------------
-                double newLat = lat0 + (y / R) * (180.0 / Math.PI);
-                double newLon = lon0 + (x / (R * Math.Cos(lat0Rad))) * (180.0 / Math.PI);
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                Debug.WriteLine($"Target {t.Id} 이동거리 = {distance:F4} m");
 
-                //------------------------------------------------------
-                // (4) Target 업데이트
-                //------------------------------------------------------
+                //--------------------------------------------------
+                // ③ (x,y) → 위도/경도 복원
+                //--------------------------------------------------
+                (double newLat, double newLon) = XYToLatLon(x, y, lat0, lon0);
+
+                //--------------------------------------------------
+                // ④ Target 업데이트
+                //--------------------------------------------------
                 t.SimPosX = x;
                 t.SimPosY = y;
-                t.CurLoc = (newLat, newLon);
 
+                t.CurLoc = (newLat, newLon);
                 t.PathHistory.Add(t.CurLoc);
 
-                //------------------------------------------------------
-                // (5) 탐지 및 C2 전송
-                //------------------------------------------------------
+                //--------------------------------------------------
+                // ⑤ 탐지 여부 및 전송
+                //--------------------------------------------------
                 if (t.IsDetected)
                 {
                     await SendtoC2Async(t);
@@ -234,32 +256,31 @@ namespace TGT.Services
                 else
                 {
                     double dLatM = (newLat - lat0) * 111000.0;
-                    double dLonM = (newLon - lon0) * 111000.0 * Math.Cos(lat0Rad);
+                    double dLonM = (newLon - lon0) * 111000.0 * Math.Cos(lat0 * Math.PI / 180.0);
                     double dist = Math.Sqrt(dLatM * dLatM + dLonM * dLonM);
 
                     if (dist <= MapService.Instance.Distance)
                         t.IsDetected = true;
                 }
 
-                //------------------------------------------------------
-                // (6) 메시지 패킹
-                //------------------------------------------------------
+                //--------------------------------------------------
+                // ⑥ 메시지 패킹
+                //--------------------------------------------------
                 updatedTargets.Add(new TargetUpdateData(
                     targetId: t.Id.ToString(),
-                    from: new PointLatLng(lat, lon),
+                    from: new PointLatLng(curLat, curLon),
                     to: new PointLatLng(newLat, newLon),
                     altitude: t.Altitude,
                     pathPoints: null
                 ));
             }
 
-            //------------------------------------------------------
-            // (7) 일괄 브로드캐스트
-            //------------------------------------------------------
+            //--------------------------------------------------
+            // ⑦ 일괄 브로드캐스트
+            //--------------------------------------------------
             if (updatedTargets.Count > 0)
                 WeakReferenceMessenger.Default.Send(new TargetBatchUpdateMessage(updatedTargets));
         }
-
 
         // 표적 추가 메서드
         public void AddTarget(Target target)
