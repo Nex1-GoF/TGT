@@ -170,71 +170,92 @@ namespace TGT.Services
 
         private async void UpdateTargets(object? sender, EventArgs e)
         {
-            const double EarthMetersPerDegree = 111_000.0; // 위도/경도 변환용 근사값
-            const double deltaTime = 0.01; // 100ms (Timer 주기)
+            const double EarthRadius = 6_378_137.0;   // 지구 반경 (m)
+            const double deltaTime = 0.01;            // 10ms
+            var updatedTargets = new List<TargetUpdateData>();
 
-
-            var updatedTargets = new List<TargetUpdateData>(); // ✅ 한 번에 보낼 데이터 모음
+            // 시뮬레이션의 기준점 (서울)
+            double lat0 = MapService.Instance.Center.Lat;
+            double lon0 = MapService.Instance.Center.Lng;
+            double lat0Rad = lat0 * Math.PI / 180.0;
 
             foreach (var t in Targets)
             {
                 if (!t.IsMoving)
                     continue;
 
-                // yaw는 degree*100 단위니까, 라디안으로 변환
+                //------------------------------------------------------
+                // ① 위도/경도를 서울 기준 (x,y)로 변환
+                //------------------------------------------------------
+                double lat = t.CurLoc.Lat;
+                double lon = t.CurLoc.Lon;
+
+                double dLat = (lat - lat0) * Math.PI / 180.0;
+                double dLon = (lon - lon0) * Math.PI / 180.0;
+
+                // (x,y): m 단위
+                double x = dLon * EarthRadius * Math.Cos(lat0Rad); // 동쪽
+                double y = dLat * EarthRadius;                     // 북쪽
+
+                //------------------------------------------------------
+                // ② 시뮬레이션 이동 적용
+                //------------------------------------------------------
                 double yawRad = (t.Yaw / 100.0) * Math.PI / 180.0;
+                double dx = Math.Cos(yawRad) * t.Speed * deltaTime;
+                double dy = Math.Sin(yawRad) * t.Speed * deltaTime;
 
-                // 진행 방향 벡터 계산 (yaw 기준)
-                double dx = Math.Cos(yawRad);
-                double dy = Math.Sin(yawRad);
+                x += dx;
+                y += dy;
 
-                // 이동 거리 (m/s * Δt) → degree 단위로 환산
-                double step = (t.Speed * deltaTime) / EarthMetersPerDegree;
+                //------------------------------------------------------
+                // ③ 시뮬레이션 (x,y) → 위도/경도로 복원
+                //------------------------------------------------------
+                double newLat = lat0 + (y / EarthRadius) * (180.0 / Math.PI);
+                double newLon = lon0 + (x / (EarthRadius * Math.Cos(lat0Rad))) * (180.0 / Math.PI);
 
-                // 새로운 좌표 계산
-                var newLat = t.CurLoc.Lat + dx * step;
-                var newLon = t.CurLoc.Lon + dy * step;
-
-                // 업데이트
+                //------------------------------------------------------
+                // ④ Target 업데이트
+                //------------------------------------------------------
+                t.SimPosX = x;
+                t.SimPosY = y;
                 t.CurLoc = (newLat, newLon);
+                t.PathHistory.Add(t.CurLoc);
 
-                // 탐지 여부 확인
+                //------------------------------------------------------
+                // ⑤ 탐지 및 전송
+                //------------------------------------------------------
                 if (t.IsDetected)
                 {
-                    // TODO: 통신 보내기 (여기에 로직)
-                    //SendtoC2(t);
                     await SendtoC2Async(t);
                 }
                 else
                 {
-                    // 거리체크
-                    double dLat = (t.CurLoc.Lat - MapService.Instance.Center.Lat) * 111.0;
-                    double dLon = (t.CurLoc.Lon - MapService.Instance.Center.Lng) * 88.8;
-                    double distanceKm = Math.Sqrt(dLat * dLat + dLon * dLon);
+                    // 거리체크 (근사)
+                    double dLatM = (newLat - lat0) * 111_000.0;
+                    double dLonM = (newLon - lon0) * 111_000.0 * Math.Cos(lat0Rad);
+                    double distanceM = Math.Sqrt(dLatM * dLatM + dLonM * dLonM);
 
-                    bool withinRange = distanceKm <= (MapService.Instance.Distance / 1000);
-                    if (withinRange)
+                    if (distanceM <= MapService.Instance.Distance)
                         t.IsDetected = true;
                 }
 
-                // (선택) 이동 경로 저장
-                t.PathHistory.Add(t.CurLoc);
-
-                // ✅ 리스트에 데이터 추가
+                //------------------------------------------------------
+                // ⑥ 메시지에 포함
+                //------------------------------------------------------
                 updatedTargets.Add(new TargetUpdateData(
                     targetId: t.Id.ToString(),
-                    from: new PointLatLng(t.CurLoc.Lat, t.CurLoc.Lon),
-                    to: new PointLatLng(newLat, newLon),
+                    from: new PointLatLng(lat, lon), // 이전 위치
+                    to: new PointLatLng(newLat, newLon), // 새 위치
                     altitude: t.Altitude,
-                    pathPoints: null // 필요 시 t.PathHistory 변환 가능
+                    pathPoints: null
                 ));
             }
 
-            // ✅ 루프 바깥에서 단 한 번만 메시지 전송
+            //------------------------------------------------------
+            // ⑦ 일괄 브로드캐스트
+            //------------------------------------------------------
             if (updatedTargets.Count > 0)
-            {
                 WeakReferenceMessenger.Default.Send(new TargetBatchUpdateMessage(updatedTargets));
-            }
         }
 
 
