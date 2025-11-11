@@ -168,7 +168,7 @@ namespace TGT.Services
         // ✅ 기존 DispatcherTimer → Fixed 100Hz 업데이트로 변경
         private void UpdateLoop()
         {
-            const double dt = 0.01;   // 100Hz
+            const double dt = 1;   // 100Hz
             Stopwatch sw = Stopwatch.StartNew();
             double accumulated = 0;
 
@@ -236,7 +236,7 @@ namespace TGT.Services
                 //--------------------------------------------------
                 t.SimPosX = x;
                 t.SimPosY = y;
-
+                Debug.WriteLine($"Target {t.Id} x = {x} y = {y}");    
                 t.CurLoc = (newLat, newLon);
                 t.PathHistory.Add(t.CurLoc);
 
