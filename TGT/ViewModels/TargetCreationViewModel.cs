@@ -27,10 +27,11 @@ namespace TGT.ViewModels
         [ObservableProperty] private double endLat = 37;
         [ObservableProperty] private double endLon = 127;
 
-        private static char _nextId = 'A';
+        private static char _nextId = '1';
 
         public TargetCreationViewModel()
         {
+            DetectedType = 'A';
             WeakReferenceMessenger.Default.Register<MapClickMessage>(this, (r, msg) =>
             {
                 var data = msg.Value;
@@ -75,7 +76,7 @@ namespace TGT.ViewModels
             };
 
             TargetService.Instance.AddTarget(target);
-
+            DetectedType = 'A';
             StartLat = 0;
             StartLon = 0;
             EndLat = 0;

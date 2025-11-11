@@ -229,6 +229,7 @@ namespace TGT.Services
                 x += dx;
                 y += dy;
 
+                Debug.WriteLine($"Target {t.Id} x = {x} y = {y}");
                 double distance = Math.Sqrt(dx * dx + dy * dy);
                 Debug.WriteLine($"Target {t.Id} 이동거리 = {distance:F4} m");
 
