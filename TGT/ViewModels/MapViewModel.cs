@@ -3,8 +3,10 @@ using GMap.NET;
 using GMap.NET.WindowsPresentation;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using TGT.Messages;
@@ -17,14 +19,16 @@ namespace TGT.ViewModels
     {
         private readonly TargetService _targetService = TargetService.Instance;
         private readonly MapService _mapService = MapService.Instance;
+        private readonly UpdateDispatcher _updateDispatcher = UpdateDispatcher.Instance;
 
-        public ObservableCollection<GMapMarker> TargetMarkers { get; } = new();
-        public ObservableCollection<GMapRoute> TargetRoutes  { get; } = new();
-        public GMapPolygon? CirclePolygon { get; private set; }
+        public ObservableCollection<GMapRoute> TargetRoutes { get; } = new();
 
         private GMapControl _map;
-        private GMapMarker? _startMarker;
-        private GMapMarker? _endMarker;
+        //public GMapPolygon? CirclePolygon { get; private set; }
+        //private GMapMarker? _startMarker;
+        //private GMapMarker? _endMarker;
+        Dictionary<string, GMapMarker> _customMarkers = new();
+        Dictionary<string, List<GMapRoute>> _routes = new();
         private bool _isStart = true;
 
         // Circle & Radius => Service 계층과 Behavior에서 관리하고, 뷰모델에서는 관리하지 않음
@@ -34,21 +38,11 @@ namespace TGT.ViewModels
         {
             _map = map;
             InitializeMap();
-            WeakReferenceMessenger.Default.Register<TargetBatchUpdateMessage>(this, (r, msg) =>
-            {
-                var targetList = msg.Value; // ✅ 이제 List<TargetUpdateData>
-
-                foreach (var data in targetList)
-                {
-                    UpdateTargetMarker(data.TargetId, data.To.Lat, data.To.Lng);
-                    AddSegmentToRoute(data.TargetId, data.From, data.To);
-                }
-            });
 
             WeakReferenceMessenger.Default.Register<TargetRemoveMessage>(this, (r, msg) =>
             {
                 var data = msg.Value;
-                RemoveTargetMarker(data.TargetId);
+                RemoveCustomMarker($"TGT-{data.TargetId}");
             });
             WeakReferenceMessenger.Default.Register<TargetAddMessage>(this, (r, msg) =>
             {
@@ -60,26 +54,68 @@ namespace TGT.ViewModels
                 var data = msg.Value;
                 SelectTargetMarker(data.TargetId);
             });
+
+            _updateDispatcher.Register(Update);
+        }
+        ~MapViewModel()
+        {
+            _updateDispatcher.Unregister(Update);
         }
 
         private void InitializeMap()
         {
             _mapService.Initialize(_map);
 
-            CirclePolygon = _mapService.DrawDetectionCircle();
+            _map.Markers.Add(_mapService.DrawDetectionCircle());
+        }
 
-            RefreshAll();
+        private void Update()
+        {
+            var targetList = _targetService.Targets.ToList(); // ✅ 이제 List<TargetUpdateData>
+
+            foreach (var data in targetList)
+            {
+                var curPosition = new PointLatLng(data.CurLoc.Lat, data.CurLoc.Lon);
+                PointLatLng updatedPosition = (PointLatLng)UpdateTargetMarker(data.Id, data.CurLoc.Lat, data.CurLoc.Lon);
+                AddSegmentToRoute(data.Id, curPosition, updatedPosition);
+            }
         }
 
 
+        public void RemoveCustomMarker(string key)
+        {
+            if (_customMarkers.TryGetValue(key, out var marker))
+            {
+                if (_map.Markers.Contains(marker))
+                    _map.Markers.Remove(marker);
+                _customMarkers.Remove(key);
+            }
+        }
+
         public void CreateTargetMarker(Target target)
         {
+            // ✅ START / END 둘 다 제거 (경로 설정 중이면 초기화)
+            RemoveCustomMarker("START");
+            RemoveCustomMarker("END");
+
+            string key = $"TGT-{target.Id}";
+
+            //// ✅ 이미 같은 ID의 표적 마커가 존재하면 위치 업데이트만 수행
+            //if (_customMarkers.TryGetValue(key, out var existingMarker))
+            //{
+            //    existingMarker.Position = new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon);
+            //    if (existingMarker.Shape is Path p)
+            //        p.RenderTransform = new RotateTransform(target.Yaw / 100.0);
+            //    return;
+            //}
+
+            // ✅ 새 마커 생성
             var triangle = new Path
             {
                 Data = Geometry.Parse("M 0,-15 L 10,15 L -10,15 Z"),
                 Stroke = Brushes.Black,
                 StrokeThickness = 1.2,
-                Fill = new SolidColorBrush(Colors.Red),
+                Fill = Brushes.Red,
                 RenderTransformOrigin = new Point(0.5, 0.5),
                 RenderTransform = new RotateTransform(target.Yaw / 100.0),
                 Cursor = Cursors.Hand,
@@ -88,7 +124,6 @@ namespace TGT.ViewModels
 
             triangle.MouseLeftButtonUp += (s, e) =>
             {
-                //e.Handled = true;
                 _targetService.SelectTarget(target);
             };
 
@@ -96,36 +131,42 @@ namespace TGT.ViewModels
             {
                 Shape = triangle,
                 Offset = new Point(-20, -20),
-                Tag = $"TGT-{target.Id}",
+                Tag = key
             };
 
-            TargetMarkers.Add(newMarker);
+            // ✅ 지도에 등록
+            if (!_map.Markers.Contains(newMarker))
+                _map.Markers.Add(newMarker);
 
-            // 경로마커 제거용
-            _startMarker = null;
-            _endMarker = null;
+            // ✅ 딕셔너리에 저장
+            _customMarkers[key] = newMarker;
+
+            // ✅ 다음 클릭은 START부터
             _isStart = true;
-
-            RefreshAll();
         }
-        public void SelectTargetMarker(string targetId)
-        { 
-            foreach(GMapMarker marker in TargetMarkers){
 
-                
-                if (marker == null) continue;
+        public void SelectTargetMarker(string targetId)
+        {
+            string selectedKey = $"TGT-{targetId}";
+
+            foreach (var kvp in _customMarkers)
+            {
+                var key = kvp.Key;
+                var marker = kvp.Value;
+
+                // 표적 마커만 대상으로 (START/END는 무시)
+                if (!key.StartsWith("TGT-"))
+                    continue;
 
                 if (marker.Shape is Path path)
                 {
-                    if((string)marker.Tag == $"TGT-{targetId}")
+                    // 선택된 마커
+                    if (key == selectedKey)
                         path.Fill = new SolidColorBrush(Colors.Yellow);
                     else
                         path.Fill = new SolidColorBrush(Colors.Red);
-
                 }
-
             }
-            RefreshAll();
         }
 
         public void PressTargetMarker(string targetId)
@@ -135,74 +176,80 @@ namespace TGT.ViewModels
             _targetService.SelectTarget(target);
         }
 
-        private void UpdateTargetMarker(string targetId, double lat, double lon)
+        private PointLatLng UpdateTargetMarker(char targetId, double lat, double lon)
         {
-            var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == $"TGT-{targetId}");
-            var target = _targetService.Targets.FirstOrDefault(m => m.Id.ToString() == targetId);
+            string key = $"TGT-{targetId}";
+            var previousPosition = new PointLatLng(0, 0);
 
-            if (marker != null && target != null)
+            if (_customMarkers.TryGetValue(key, out var marker))
             {
+                previousPosition = marker.Position;
                 marker.Position = new PointLatLng(lat, lon);
-                marker.Shape.RenderTransform = new RotateTransform(target.Yaw / 100.0);
-                RefreshAll();
-            }
-        }
 
-        private void RemoveTargetMarker(string targetId)
-        {
-            var marker = TargetMarkers.FirstOrDefault(m => (string)m.Tag == $"TGT-{targetId}");
-            if (marker != null)
-            {
-                TargetMarkers.Remove(marker);
-                RefreshAll();
+                // (선택) Shape 회전 등 추가 업데이트 가능
+                if (marker.Shape is Path shape && _targetService.Targets.FirstOrDefault(t => t.Id == targetId) is Target tgt)
+                {
+                    shape.RenderTransform = new RotateTransform(tgt.Yaw / 100.0);
+                }
             }
+            else
+            {
+                Debug.WriteLine($"[MapViewModel] Target marker not found: {key}");
+            }
+
+            return previousPosition;
         }
 
         public void SetPosition(PointLatLng latLng)
         {
-            if (_isStart)
+            string key = _isStart ? "START" : "END";
+
+            // 1️⃣ START/END 마커 존재 확인
+            if (!_customMarkers.TryGetValue(key, out var marker))
             {
-                _startMarker = new GMapMarker(latLng)
+                // 2️⃣ 없으면 새로 생성
+                var newMarker = new GMapMarker(latLng)
                 {
                     Shape = new Ellipse
                     {
                         Width = 12,
                         Height = 12,
-                        Fill = Brushes.LimeGreen,
-                        Stroke = Brushes.DarkGreen,
-                        StrokeThickness = 1.2,
-                        Opacity = 0.9
-                    },
-                    Offset = new Point(-6, -6), // 중심 정렬
-                    Tag = "START"
-                };
-            }
-            else
-            {
-                _endMarker = new GMapMarker(latLng)
-                {
-                    Shape = new Ellipse
-                    {
-                        Width = 12,
-                        Height = 12,
-                        Fill = Brushes.Red,
-                        Stroke = Brushes.DarkRed,
+                        Fill = _isStart ? Brushes.LimeGreen : Brushes.Red,
+                        Stroke = _isStart ? Brushes.DarkGreen : Brushes.DarkRed,
                         StrokeThickness = 1.2,
                         Opacity = 0.9
                     },
                     Offset = new Point(-6, -6),
-                    Tag = "END"
+                    Tag = key
                 };
+
+                // 지도에 바로 추가
+                _map.Markers.Add(newMarker);
+
+                // 딕셔너리에 참조 저장
+                _customMarkers[key] = newMarker;
             }
-            // Viewmodel <-> Viewmodel 끼리 어쩔 수 없이 상호작용 해야함 (지도 업데이트와 표적 업데이트를 같이해야하기 때문에)
+            else
+            {
+                // 3️⃣ 이미 있으면 위치만 업데이트
+                marker.Position = latLng;
+            }
+
+            // 4️⃣ 메시지 전송 (ViewModel ↔ ViewModel 연동용)
             WeakReferenceMessenger.Default.Send(new MapClickMessage(new MapClickData(latLng, _isStart)));
+
+            // 5️⃣ 다음 클릭 시 역할 반전
             _isStart = !_isStart;
-            RefreshAll();
         }
 
 
-        private void AddSegmentToRoute(string id, PointLatLng from, PointLatLng to)
+        private void AddSegmentToRoute(char id, PointLatLng from, PointLatLng to)
         {
+            if (_map == null) return;
+
+            string key = $"TGT-{id}";
+
+            // ✅ 새 경로 세그먼트 생성
             var route = new GMapRoute(new List<PointLatLng> { from, to })
             {
                 Shape = new Path
@@ -214,39 +261,16 @@ namespace TGT.ViewModels
                 Tag = $"SEG-{id}-{Guid.NewGuid()}"
             };
 
-            TargetRoutes.Add(route);
-        }
-
-        public void RefreshAll()
-        {
-            if (_map == null) return;
-
-            Application.Current.Dispatcher.Invoke(() =>
+            // ✅ 딕셔너리에 경로 리스트 없으면 생성
+            if (!_routes.TryGetValue(key, out var routeList))
             {
-                _map.Markers.Clear();
+                routeList = new List<GMapRoute>();
+                _routes[key] = routeList;
+            }
 
-                // 표적 마커 추가
-                foreach (var m in TargetMarkers)
-                    _map.Markers.Add(m);
-
-                // 경로 추가
-                foreach (var r in TargetRoutes)
-                    _map.Markers.Add(r);
-
-                // 탐지 원
-                if (CirclePolygon != null)
-                    _map.Markers.Add(CirclePolygon);
-
-                // 경로 폴리곤
-                if(_startMarker != null)
-                    _map.Markers.Add(_startMarker);
-
-                if(_endMarker != null)
-                    _map.Markers.Add(_endMarker);
-
-                _map.InvalidateVisual();
-            });
+            // ✅ 리스트 및 맵에 누적 추가
+            routeList.Add(route);
+            _map.Markers.Add(route);
         }
-
     }
 }
