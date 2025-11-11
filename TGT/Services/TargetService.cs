@@ -17,31 +17,33 @@ namespace TGT.Services
 {
     public class TgtInfoPakcet
     {
+        public const int TGT_INFO_PACKET_SIZE = 37;
+
         public string SrcId { get; set; }              // 송신자 아이디 (4 chars)
         public string DesId { get; set; }              // 수신자 아이디 (4 chars)
         public UInt32 Seq { get; set; }                // 시퀀스 번호 (4 bytes)
         public byte MsgSize { get; set; }              // 메시지 본문 크기 (1 byte)
-        public string DetectedId { get; set; }         // 탐지 아이디 (4 chars)
-        public Int32 X { get; set; }            // 위도 (4 bytes, ×1e7)
-        public Int32 Y { get; set; }           // 경도 (4 bytes, ×1e7)
-        public Int32 Z { get; set; }            // 고도 (2 bytes)
+        public char DetectedId { get; set; }         // 탐지 아이디 (1 chars)
+        public Int32 Latitude { get; set; }            // 위도 (4 bytes, ×1e7)
+        public Int32 Longtitude { get; set; }           // 경도 (4 bytes, ×1e7)
+        public Int16 Altitude { get; set; }            // 고도 (2 bytes)
         public Int16 Yaw { get; set; }                 // 요 (2 bytes)
         public UInt64 DetectedTime { get; set; }       // 탐지 시간 (8 bytes)
         public UInt16 Speed { get; set; }              // 속도 (2 bytes)
-        public byte DetectedType { get; set; }         // 탐지체 구분 (1 byte)
+        public char DetectedType { get; set; }         // 탐지체 구분 (1 byte)
 
         public TgtInfoPakcet(string srcId, string desId, UInt32 seq, byte msgSize,
-                                string detectedId, Int32 x, Int32 y, Int32 z, Int16 yaw,
-                                UInt64 detectedTime, UInt16 speed, byte detectedType)
+                                char detectedId, Int32 latitude, Int32 longtitude, Int16 altitude, Int16 yaw,
+                                UInt64 detectedTime, UInt16 speed, char detectedType)
         {
             SrcId = srcId;
             DesId = desId;
             Seq = seq;
             MsgSize = msgSize;
             DetectedId = detectedId;
-            X = x;
-            Y = y;
-            Z = z;
+            Latitude = latitude;
+            Longtitude = longtitude;
+            Altitude = altitude;
             Yaw = yaw;
             DetectedTime = detectedTime;
             Speed = speed;
@@ -50,7 +52,7 @@ namespace TGT.Services
 
         public byte[] Serialize()
         {
-            var buffer = new byte[42];
+            var buffer = new byte[TGT_INFO_PACKET_SIZE];
             var span = buffer.AsSpan();
             int offset = 0;
 
@@ -60,22 +62,23 @@ namespace TGT.Services
             BitConverter.TryWriteBytes(span.Slice(offset, 4), Seq); offset += 4;
             span[offset++] = MsgSize;
 
-            Encoding.ASCII.GetBytes(DetectedId.PadRight(4)).CopyTo(span.Slice(offset, 4)); offset += 4;
-            BitConverter.TryWriteBytes(span.Slice(offset, 4), X); offset += 4;
-            BitConverter.TryWriteBytes(span.Slice(offset, 4), Y); offset += 4;
-            BitConverter.TryWriteBytes(span.Slice(offset, 4), Z); offset += 4;
+            span[offset++] = (byte)DetectedId;
+
+            BitConverter.TryWriteBytes(span.Slice(offset, 4), Latitude); offset += 4;
+            BitConverter.TryWriteBytes(span.Slice(offset, 4), Longtitude); offset += 4;
+            BitConverter.TryWriteBytes(span.Slice(offset, 2), Altitude); offset += 2;
             BitConverter.TryWriteBytes(span.Slice(offset, 2), Yaw); offset += 2;
             BitConverter.TryWriteBytes(span.Slice(offset, 8), DetectedTime); offset += 8;
             BitConverter.TryWriteBytes(span.Slice(offset, 2), Speed); offset += 2;
 
-            span[offset++] = DetectedType;
+            span[offset++] = (byte)DetectedType;
 
             return buffer;
         }
 
         public TgtInfoPakcet Deserialize(byte[] data)
         {
-            if (data.Length != 42) throw new ArgumentException("Invalid packet size");
+            if (data.Length != TGT_INFO_PACKET_SIZE) throw new ArgumentException("Invalid packet size");
 
             var span = data.AsSpan();
             int offset = 0;
@@ -86,20 +89,41 @@ namespace TGT.Services
             Seq = BitConverter.ToUInt32(span.Slice(offset, 4)); offset += 4;
             MsgSize = span[offset++];
 
-            DetectedId = Encoding.ASCII.GetString(span.Slice(offset, 4)).Trim(); offset += 4;
-            X = BitConverter.ToInt32(span.Slice(offset, 4)); offset += 4;
-            Y = BitConverter.ToInt32(span.Slice(offset, 4)); offset += 4;
-            Z = BitConverter.ToInt16(span.Slice(offset, 4)); offset += 4;
+            DetectedId = (char)span[offset++];
+
+            Latitude = BitConverter.ToInt32(span.Slice(offset, 4)); offset += 4;
+            Longtitude = BitConverter.ToInt32(span.Slice(offset, 4)); offset += 4;
+            Altitude = BitConverter.ToInt16(span.Slice(offset, 2)); offset += 2;
             Yaw = BitConverter.ToInt16(span.Slice(offset, 2)); offset += 2;
             DetectedTime = BitConverter.ToUInt64(span.Slice(offset, 8)); offset += 8;
             Speed = BitConverter.ToUInt16(span.Slice(offset, 2)); offset += 2;
 
-            DetectedType = span[offset++];
+            DetectedType = (char)span[offset++];
 
             return this;
+
         }
     }
 
+    public class TgtFinPacket
+    {
+        public const int TGT_FIN_PACKET_SIZE = 14;
+
+        public string SrcId { get; set; }              // 송신자 아이디 (4 chars)
+        public string DesId { get; set; }              // 수신자 아이디 (4 chars)
+        public UInt32 Seq { get; set; }                // 시퀀스 번호 (4 bytes)
+        public byte MsgSize { get; set; }              // 메시지 본문 크기 (1 byte)
+        public char DetectedId { get; set; }         // 탐지 아이디 (1 chars)
+
+        public TgtFinPacket(string srcId, string desId, UInt32 seq, byte msgSize, char detectedId)
+        {
+            SrcId = srcId;
+            DesId = desId;
+            Seq = seq;
+            MsgSize = msgSize;
+            DetectedId = detectedId;
+        }
+    }
 
     public class TargetService
     {
@@ -114,19 +138,24 @@ namespace TGT.Services
         public Target? SelectedTarget;
 
         // === 소켓 ===
-        private static int Hz = 100;
         private static string DestIp = "127.0.0.1";
         private static int DestPort = 7003;
 
-        private Socket socket;
+        private Socket txSocket;
         private IPAddress ipAddress;
         private IPEndPoint ep;
 
+        private Socket rxSocket;
+
         private TargetService()
         {
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            txSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             ipAddress = IPAddress.Parse(DestIp);
             ep = new IPEndPoint(ipAddress, DestPort);
+
+            rxSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            rxSocket.Bind(new IPEndPoint(IPAddress.Any, 6004));
+            Task.Run(StartReceivingAsync);
 
             // ✅ 정확히 100Hz 고정 루프 시작
             _updateThread = new Thread(UpdateLoop)
@@ -249,15 +278,26 @@ namespace TGT.Services
 
         private async Task SendtoC2Async(Target target)
         {
-            TgtInfoPakcet packet = new TgtInfoPakcet(
-                "T001", "C001", 0, 40,
-                $"E00{target.Id}", (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7),
-                (Int32)target.Altitude,
-                (Int16)target.Yaw,
-                target.DetectTime.HasValue ? (UInt64)(target.DetectTime.Value - DateTime.UnixEpoch).TotalMilliseconds : 0UL,
-                (UInt16)target.Speed, (byte)target.DetectedType);
+            TgtInfoPakcet packet = new TgtInfoPakcet("T001", "C001", 0, TgtInfoPakcet.TGT_INFO_PACKET_SIZE,
+                                                    target.Id, (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7),
+                                                    (Int16)target.Altitude, (Int16)target.Yaw,
+                                                    (UInt64)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                                                    (UInt16)target.Speed, target.DetectedType);
+            var buffer = packet.Serialize();
+            await txSocket.SendToAsync(new ArraySegment<byte>(buffer), SocketFlags.None, ep);
+        }
 
-            await socket.SendToAsync(new ArraySegment<byte>(packet.Serialize()), SocketFlags.None, ep);
+        private async Task StartReceivingAsync()
+        {
+            var buffer = new byte[TgtFinPacket.TGT_FIN_PACKET_SIZE];
+            EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+
+            while (true)
+            {
+                var result = await rxSocket.ReceiveFromAsync(new ArraySegment<byte>(buffer), SocketFlags.None, remoteEP);
+
+                // 격추 알려주는 로직
+            }
         }
 
         private (double x, double y) LatLonToXY(double lat, double lon, double lat0, double lon0)
