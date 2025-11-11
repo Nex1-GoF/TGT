@@ -104,6 +104,26 @@ namespace TGT.Services
         }
     }
 
+    public class TgtFinPacket
+    {
+        public const int TGT_FIN_PACKET_SIZE = 14;
+
+        public string SrcId { get; set; }              // 송신자 아이디 (4 chars)
+        public string DesId { get; set; }              // 수신자 아이디 (4 chars)
+        public UInt32 Seq { get; set; }                // 시퀀스 번호 (4 bytes)
+        public byte MsgSize { get; set; }              // 메시지 본문 크기 (1 byte)
+        public char DetectedId { get; set; }         // 탐지 아이디 (1 chars)
+
+        public TgtFinPacket(string srcId, string desId, UInt32 seq, byte msgSize, char detectedId)
+        {
+            SrcId = srcId;
+            DesId = desId;
+            Seq = seq;
+            MsgSize = msgSize;
+            DetectedId = detectedId;
+        }
+    }
+
         public class    TargetService
     {
         private static TargetService _instance;
@@ -117,16 +137,22 @@ namespace TGT.Services
         private static string DestIp = "127.0.0.1";
         private static int DestPort = 7003;
 
-        private Socket socket;
+        private Socket txSocket;
         private IPAddress ipAddress;
         private IPEndPoint ep;
+
+        private Socket rxSocket;
 
 
         private TargetService()
         {
-            socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            txSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             ipAddress = IPAddress.Parse(DestIp);
             ep = new IPEndPoint(ipAddress, DestPort);
+
+            rxSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            rxSocket.Bind(new IPEndPoint(IPAddress.Any, 6004));
+            Task.Run(StartReceivingAsync);
 
             _timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(10) }; // 100Hz
             _timer.Tick += UpdateTargets;
@@ -141,9 +167,21 @@ namespace TGT.Services
                                                     (UInt64)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                                                     (UInt16)target.Speed, target.DetectedType);
             var buffer = packet.Serialize();
-            await socket.SendToAsync(new ArraySegment<byte>(buffer), SocketFlags.None, ep);
+            await txSocket.SendToAsync(new ArraySegment<byte>(buffer), SocketFlags.None, ep);
         }
 
+        private async Task StartReceivingAsync()
+        {
+            var buffer = new byte[TgtFinPacket.TGT_FIN_PACKET_SIZE];
+            EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
+
+            while (true)
+            {
+                var result = await rxSocket.ReceiveFromAsync(new ArraySegment<byte>(buffer), SocketFlags.None, remoteEP);
+
+                // 격추 알려주는 로직
+            }
+        }
 
         private async void UpdateTargets(object? sender, EventArgs e)
         {
