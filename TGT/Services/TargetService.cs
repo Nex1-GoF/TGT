@@ -138,7 +138,7 @@ namespace TGT.Services
             TgtInfoPakcet packet = new TgtInfoPakcet("T001", "C001", 0, TgtInfoPakcet.TGT_INFO_PACKET_SIZE,
                                                     target.Id, (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7),
                                                     (Int16)target.Altitude, (Int16)target.Yaw,
-                                                    target.DetectTime.HasValue ? (UInt64)(target.DetectTime.Value - DateTime.UnixEpoch).TotalMilliseconds : 0UL,
+                                                    (UInt64)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                                                     (UInt16)target.Speed, target.DetectedType);
             var buffer = packet.Serialize();
             await socket.SendToAsync(new ArraySegment<byte>(buffer), SocketFlags.None, ep);
