@@ -9,15 +9,15 @@
 
     <Border Background="#111D2E" CornerRadius="8" Padding="10">
         <StackPanel>
-            <Button Content="표적 생성"
-                    
-                    Background="#009E4F"
-                    Foreground="White"
-                    FontSize="16"
-                    FontWeight="Bold"
-                    Margin="0,0,0,8"
-                    Padding="10,4"
-                    BorderThickness="0"/>
+            <TextBlock Text="표적 생성 툴" Background="#222"
+Foreground="White"
+FontSize="16"
+FontWeight="Bold"
+Margin="0,0,0,8"
+Padding="10,4"
+HorizontalAlignment="Center"
+/>
+            
             <!--Command="{Binding ToggleCreateModeCommand}"-->
 
             <Border Background="#222" CornerRadius="8" Padding="10" >
@@ -30,7 +30,8 @@
                     <!-- 왼쪽 입력 -->
                     <StackPanel Grid.Column="0" Margin="0,0,8,0">
                         <TextBlock Text="모델 구분" Foreground="White"/>
-                        <ComboBox Width="60" SelectedValue="{Binding DetectedType}">
+                        <ComboBox Width="60" SelectedValue="{Binding DetectedType}"
+          SelectedValuePath="Content" >
                             <ComboBoxItem Content="A" />
                             <ComboBoxItem Content="B" />
                             <ComboBoxItem Content="C" />
@@ -58,7 +59,8 @@
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
-                            <Button Content="등록" Command="{Binding AddTargetCommand}" Margin="0,0,5,0"/>
+                            <Button Content="등록" Command="{Binding AddTargetCommand}"
+        IsEnabled="{Binding CanAdd}" Margin="0,0,5,0"/>
                             <!--Button Content="초기화" Command="{Binding ResetCommand}"/-->
                         </StackPanel>
                     </StackPanel>

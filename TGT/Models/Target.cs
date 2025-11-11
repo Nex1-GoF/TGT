@@ -10,6 +10,9 @@ namespace TGT.Models
 {
     public class Target : INotifyPropertyChanged
     {
+        // Target.cs 내부
+        public double SimPosX { get; set; }  // 기준점 기준 동쪽 방향 (m)
+        public double SimPosY { get; set; }  // 기준점 기준 북쪽 방향 (m)
         public char Id { get; set; }
         public char DetectedType { get; set; }
         public int Speed { get; set; }     // m/s

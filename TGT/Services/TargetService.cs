@@ -2,16 +2,17 @@
 using GMap.NET;
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
-using System.Windows.Controls.Primitives;
-using System.Windows.Threading;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using TGT.Messages;
 using TGT.Models;
 using TGT.ViewModels;
-
+using System.Windows;
 namespace TGT.Services
 {
     public class TgtInfoPakcet
@@ -129,7 +130,10 @@ namespace TGT.Services
         private static TargetService _instance;
         public static TargetService Instance => _instance ??= new TargetService();
 
-        private readonly DispatcherTimer _timer;
+        private Thread _updateThread;
+        private bool _running = true;
+
+        // 기존 그대로
         public ObservableCollection<Target> Targets { get; } = new();
         public Target? SelectedTarget;
 
@@ -183,82 +187,144 @@ namespace TGT.Services
             }
         }
 
-        private async void UpdateTargets(object? sender, EventArgs e)
+                Thread.Sleep(0); // CPU 점유율 방지
+            }
+        }
+
+        private void UpdateTargets(double dt)
         {
-            const double EarthMetersPerDegree = 111_000.0; // 위도/경도 변환용 근사값
-            const double deltaTime = 0.01; // 100ms (Timer 주기)
+            const double R = 6_378_137.0; // 지구 반경(m)
+            var updatedTargets = new List<TargetUpdateData>();
 
+            // 기준점 (서울)
+            double lat0 = MapService.Instance.Center.Lat;
+            double lon0 = MapService.Instance.Center.Lng;
 
-            var updatedTargets = new List<TargetUpdateData>(); // ✅ 한 번에 보낼 데이터 모음
-
-            foreach (var t in Targets)
+            foreach (var t in Targets.ToList())
             {
                 if (!t.IsMoving)
                     continue;
 
-                // yaw는 degree*100 단위니까, 라디안으로 변환
-                double yawRad = (t.Yaw / 100.0) * Math.PI / 180.0;
+                double curLat = t.CurLoc.Lat;
+                double curLon = t.CurLoc.Lon;
 
-                // 진행 방향 벡터 계산 (yaw 기준)
-                double dx = Math.Cos(yawRad);
-                double dy = Math.Sin(yawRad);
+                //--------------------------------------------------
+                // ① 위도/경도 → 평면좌표(x, y) 변환
+                //--------------------------------------------------
+                (double x, double y) = LatLonToXY(curLat, curLon, lat0, lon0);
 
-                // 이동 거리 (m/s * Δt) → degree 단위로 환산
-                double step = (t.Speed * deltaTime) / EarthMetersPerDegree;
+                //--------------------------------------------------
+                // ② 이동 적용 (m 단위)
+                //--------------------------------------------------
+                double headingRad = (t.Yaw / 100.0) * Math.PI / 180.0;
 
-                // 새로운 좌표 계산
-                var newLat = t.CurLoc.Lat + dx * step;
-                var newLon = t.CurLoc.Lon + dy * step;
+                double dx = Math.Sin(headingRad) * t.Speed * dt;   // 동
+                double dy = Math.Cos(headingRad) * t.Speed * dt;   // 북
 
-                // 업데이트
+                x += dx;
+                y += dy;
+
+                //Debug.WriteLine($"Target {t.Id} x = {x} y = {y}");
+
+                //--------------------------------------------------
+                // ③ (x,y) → 위도/경도 복원
+                //--------------------------------------------------
+                (double newLat, double newLon) = XYToLatLon(x, y, lat0, lon0);
+
+                //--------------------------------------------------
+                // ④ Target 업데이트
+                //--------------------------------------------------
+                t.SimPosX = x;
+                t.SimPosY = y;
+
                 t.CurLoc = (newLat, newLon);
+                t.PathHistory.Add(t.CurLoc);
 
-                // 탐지 여부 확인
+                //--------------------------------------------------
+                // ⑤ 탐지 여부 및 전송
+                //--------------------------------------------------
                 if (t.IsDetected)
                 {
-                    // TODO: 통신 보내기 (여기에 로직)
-                    //SendtoC2(t);
-                    await SendtoC2Async(t);
+                    SendtoC2Async(t);
                 }
                 else
                 {
-                    // 거리체크
-                    double dLat = (t.CurLoc.Lat - MapService.Instance.Center.Lat) * 111.0;
-                    double dLon = (t.CurLoc.Lon - MapService.Instance.Center.Lng) * 88.8;
-                    double distanceKm = Math.Sqrt(dLat * dLat + dLon * dLon);
+                    double dLatM = (newLat - lat0) * 111000.0;
+                    double dLonM = (newLon - lon0) * 111000.0 * Math.Cos(lat0 * Math.PI / 180.0);
+                    double dist = Math.Sqrt(dLatM * dLatM + dLonM * dLonM);
 
-                    bool withinRange = distanceKm <= (MapService.Instance.Distance / 1000);
-                    if (withinRange)
+                    if (dist <= MapService.Instance.Distance)
                         t.IsDetected = true;
                 }
 
-                // (선택) 이동 경로 저장
-                t.PathHistory.Add(t.CurLoc);
-
-                // ✅ 리스트에 데이터 추가
+                //--------------------------------------------------
+                // ⑥ 메시지 패킹
+                //--------------------------------------------------
                 updatedTargets.Add(new TargetUpdateData(
                     targetId: t.Id.ToString(),
-                    from: new PointLatLng(t.CurLoc.Lat, t.CurLoc.Lon),
+                    from: new PointLatLng(curLat, curLon),
                     to: new PointLatLng(newLat, newLon),
                     altitude: t.Altitude,
-                    pathPoints: null // 필요 시 t.PathHistory 변환 가능
+                    pathPoints: null
                 ));
             }
 
-            // ✅ 루프 바깥에서 단 한 번만 메시지 전송
+            //--------------------------------------------------
+            // ⑦ 일괄 브로드캐스트
+            //--------------------------------------------------
             if (updatedTargets.Count > 0)
-            {
                 WeakReferenceMessenger.Default.Send(new TargetBatchUpdateMessage(updatedTargets));
-            }
+        }
+
+        private async Task SendtoC2Async(Target target)
+        {
+            TgtInfoPakcet packet = new TgtInfoPakcet(
+                "T001", "C001", 0, 40,
+                $"E00{target.Id}", (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7),
+                (Int32)target.Altitude,
+                (Int16)target.Yaw,
+                target.DetectTime.HasValue ? (UInt64)(target.DetectTime.Value - DateTime.UnixEpoch).TotalMilliseconds : 0UL,
+                (UInt16)target.Speed, (byte)target.DetectedType);
+
+            await socket.SendToAsync(new ArraySegment<byte>(packet.Serialize()), SocketFlags.None, ep);
+        }
+
+        private (double x, double y) LatLonToXY(double lat, double lon, double lat0, double lon0)
+        {
+            const double R = 6_378_137.0; // 지구 반경
+            double lat0Rad = lat0 * Math.PI / 180.0;
+
+            double dLat = (lat - lat0) * Math.PI / 180.0;
+            double dLon = (lon - lon0) * Math.PI / 180.0;
+
+            double x = dLon * R * Math.Cos(lat0Rad);  // 동쪽
+            double y = dLat * R;                      // 북쪽
+
+            return (x, y);
+        }
+
+        private (double lat, double lon) XYToLatLon(double x, double y, double lat0, double lon0)
+        {
+            const double R = 6_378_137.0;
+            double lat0Rad = lat0 * Math.PI / 180.0;
+
+            double newLat = lat0 + (y / R) * (180.0 / Math.PI);
+            double newLon = lon0 + (x / (R * Math.Cos(lat0Rad))) * (180.0 / Math.PI);
+
+            return (newLat, newLon);
         }
 
 
+        // ===================== 기존 메서드 유지 =====================
 
-        // 표적 추가 메서드
         public void AddTarget(Target target)
         {
-            Targets.Add(target); // 모델 업데이트
-            WeakReferenceMessenger.Default.Send(new TargetAddMessage(new TargetAddData(target))); // Map Viewmodel로 전달 
+            Targets.Add(target);
+            WeakReferenceMessenger.Default.Send(new TargetAddMessage(new TargetAddData(target)));
+
+            var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
+            if (logVM != null)
+                logVM.IsAnyTarget = Targets.Count > 0;
         }
 
         public void StartTarget(char id)
@@ -272,35 +338,46 @@ namespace TGT.Services
             }
         }
 
-        private Target? FindTarget(char id)
-        {
-            return Targets.FirstOrDefault(t => t.Id == id);
-        }
-
-        public void RemoveTarget(Target target)
-        {
-            Targets.Remove(target);
-            WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
-        }
-
         public void StartAll()
         {
             foreach (var t in Targets)
                 t.IsMoving = true;
         }
+        public class TargetListChangedMessage { }
+        public void RemoveTarget(Target target)
+        {
+            Targets.Remove(target);
+            WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
+            WeakReferenceMessenger.Default.Send(new TargetListChangedMessage());
+            var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
+            if (logVM != null)
+                logVM.IsAnyTarget = Targets.Count > 0;
+        }
+
+        private Target? FindTarget(char id)
+        {
+            return Targets.FirstOrDefault(t => t.Id == id);
+        }
+
         public void SelectTarget(Target selected)
         {
             if (selected.IsMoving == false) return;
-            if (SelectedTarget != null && selected.Id == SelectedTarget.Id) 
+
+            if (SelectedTarget != null && selected.Id == SelectedTarget.Id)
             {
                 SelectedTarget = null;
                 WeakReferenceMessenger.Default.Send(new TargetSelectMessage(new TargetSelectData("NULL")));
                 return;
             }
-                
+
             SelectedTarget = selected;
             WeakReferenceMessenger.Default.Send(new TargetSelectMessage(new TargetSelectData(selected.Id.ToString())));
         }
 
+        // ✅ 서비스 종료
+        public void Stop()
+        {
+            _running = false;
+        }
     }
 }

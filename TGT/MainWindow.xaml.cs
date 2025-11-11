@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using TGT.Network;
 
 namespace TGT
 {
@@ -17,10 +18,13 @@ namespace TGT
     /// </summary>
     public partial class MainWindow : Window
     {
+        private ReceiveExit _receiveExit;
         public MainWindow()
         {
             InitializeComponent();
             PreviewKeyDown += OnPreviewKeyDown;
+            _receiveExit = new ReceiveExit(50000);
+            _receiveExit.Start();
         }
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
