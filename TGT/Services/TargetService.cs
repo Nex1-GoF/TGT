@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 using TGT.Messages;
 using TGT.Models;
 using TGT.ViewModels;
-
+using System.Windows;
 namespace TGT.Services
 {
     public class TgtInfoPakcet
@@ -153,15 +153,16 @@ namespace TGT.Services
                 // 누적된 시간이 dt 이상이면 여러 프레임 처리
                 while (accumulated >= dt)
                 {
+                    Debug.WriteLine($"Target {accumulated}");
                     UpdateTargets(dt);   // ✅ 기존 UpdateTargets 로직 유지
                     accumulated -= dt;
                 }
 
-                Thread.Sleep(1); // CPU 점유율 방지
+                Thread.Sleep(0); // CPU 점유율 방지
             }
         }
 
-        private async void UpdateTargets(double dt)
+        private void UpdateTargets(double dt)
         {
             const double R = 6_378_137.0; // 지구 반경(m)
             var updatedTargets = new List<TargetUpdateData>();
@@ -170,7 +171,7 @@ namespace TGT.Services
             double lat0 = MapService.Instance.Center.Lat;
             double lon0 = MapService.Instance.Center.Lng;
 
-            foreach (var t in Targets)
+            foreach (var t in Targets.ToList())
             {
                 if (!t.IsMoving)
                     continue;
@@ -194,7 +195,7 @@ namespace TGT.Services
                 x += dx;
                 y += dy;
 
-                Debug.WriteLine($"Target {t.Id} x = {x} y = {y}");
+                //Debug.WriteLine($"Target {t.Id} x = {x} y = {y}");
 
                 //--------------------------------------------------
                 // ③ (x,y) → 위도/경도 복원
@@ -215,7 +216,7 @@ namespace TGT.Services
                 //--------------------------------------------------
                 if (t.IsDetected)
                 {
-                    await SendtoC2Async(t);
+                    SendtoC2Async(t);
                 }
                 else
                 {
@@ -291,6 +292,10 @@ namespace TGT.Services
         {
             Targets.Add(target);
             WeakReferenceMessenger.Default.Send(new TargetAddMessage(new TargetAddData(target)));
+
+            var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
+            if (logVM != null)
+                logVM.IsAnyTarget = Targets.Count > 0;
         }
 
         public void StartTarget(char id)
@@ -309,11 +314,15 @@ namespace TGT.Services
             foreach (var t in Targets)
                 t.IsMoving = true;
         }
-
+        public class TargetListChangedMessage { }
         public void RemoveTarget(Target target)
         {
             Targets.Remove(target);
             WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
+            WeakReferenceMessenger.Default.Send(new TargetListChangedMessage());
+            var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
+            if (logVM != null)
+                logVM.IsAnyTarget = Targets.Count > 0;
         }
 
         private Target? FindTarget(char id)

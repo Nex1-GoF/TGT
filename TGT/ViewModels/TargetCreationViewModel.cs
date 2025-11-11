@@ -8,10 +8,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
 using TGT.Views;
+using static TGT.Services.TargetService;
 
 
 namespace TGT.ViewModels
@@ -28,7 +30,6 @@ namespace TGT.ViewModels
         [ObservableProperty] private double endLon = 127;
 
         private static char _nextId = '1';
-
         public TargetCreationViewModel()
         {
             DetectedType = 'A';
@@ -36,6 +37,10 @@ namespace TGT.ViewModels
             {
                 var data = msg.Value;
                 SetCommand(data.LatLng, data.IsFirst);
+            }); 
+            WeakReferenceMessenger.Default.Register<TargetListChangedMessage>(this, (r, m) =>
+            {
+                OnPropertyChanged(nameof(CanAdd));
             });
         }
 
@@ -53,14 +58,46 @@ namespace TGT.ViewModels
                 EndLon = latLng.Lng;
             }
         }
+        public bool CanAdd => TargetService.Instance.Targets.Count < 4;
 
         [RelayCommand]
         private void AddTarget()
         {
-            
-            // 태현 - 출발 도착 위/경도로 초기 Yaw 도출하는 기능 추가 (마커가 방향 표시 제대로 하는지 확인하기 위해)
-            double yawDeg = CalculateYaw(startLat, startLon, endLat, endLon); // 초기 Yaw 계산
-            int yawInt = (int)(yawDeg * 100); // deg × 100 형식
+            if (StartLat == 0 && StartLon == 0 && EndLat == 0 && EndLon == 0)
+            {
+                MessageBox.Show("시작/도착 위경도를 먼저 설정하세요.",
+                                "표적 생성 불가",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Warning);
+                return;
+            }
+            int count = TargetService.Instance.Targets.Count;
+
+            // ✅ 이미 4개면 생성 불가
+            if (count >= 4)
+            {
+                MessageBox.Show("표적은 최대 4개까지 생성할 수 있습니다.",
+                                "표적 제한", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // ✅ 등록 전 현재 남은 개수 알림
+            int remain = 4 - count - 1; // 현재 생성 포함
+            MessageBox.Show($"표적이 {count + 1}개 생성됩니다.\n" +
+                            $"남은 생성 가능 개수: {remain}개",
+                            "표적 생성", MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // ✅ 실제 타겟 생성
+            CreateNewTarget();
+
+            // ✅ 버튼 활성화/비활성화 갱신
+            OnPropertyChanged(nameof(CanAdd));
+        }
+        private void CreateNewTarget()
+        {
+            // 너의 기존 생성 로직 그대로!
+            double yawDeg = CalculateYaw(startLat, startLon, endLat, endLon);
+            int yawInt = (int)(yawDeg * 100);
 
             var target = new Target
             {
@@ -70,12 +107,12 @@ namespace TGT.ViewModels
                 Altitude = altitude,
                 CurLoc = (startLat, startLon),
                 EndLoc = (endLat, endLon),
-                Yaw = yawInt,
-                DetectTime = null,
-                IsDetected = false
+                Yaw = yawInt
             };
 
             TargetService.Instance.AddTarget(target);
+
+            // 리셋
             DetectedType = 'A';
             StartLat = 0;
             StartLon = 0;

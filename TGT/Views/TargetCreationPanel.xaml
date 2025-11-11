@@ -59,7 +59,8 @@ HorizontalAlignment="Center"
                         </StackPanel>
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
-                            <Button Content="등록" Command="{Binding AddTargetCommand}" Margin="0,0,5,0"/>
+                            <Button Content="등록" Command="{Binding AddTargetCommand}"
+        IsEnabled="{Binding CanAdd}" Margin="0,0,5,0"/>
                             <!--Button Content="초기화" Command="{Binding ResetCommand}"/-->
                         </StackPanel>
                     </StackPanel>

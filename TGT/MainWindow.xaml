@@ -5,8 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TGT"
         xmlns:views="clr-namespace:TGT.Views"
+        xmlns:vm="clr-namespace:TGT.ViewModels"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <vm:LogViewModel x:Key="LogVM"/>
+    </Window.Resources>
+
     <Grid>
         <!-- 행: 위 3/4, 아래 1/4 -->
         <Grid.ColumnDefinitions>
@@ -19,7 +24,45 @@
         <!-- MapPanel: 왼쪽 위 (3/4, 3/4) -->
         <views:MapPanel Grid.Row="0" Grid.Column="0" 
                     Margin="5" Background="LightBlue"/>
+        <StackPanel Orientation="Vertical"
+    Grid.Row="0"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Top"
+    Margin="15">
+            <!--접기/펼치기-->
+            <TextBlock Text="시스템 메시지: 생성한 표적이 있습니다."
+           FontSize="16" FontWeight="SemiBold"
+           Foreground="Red">
 
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Source={StaticResource LogVM}, Path=IsAnyTarget}" 
+                             Value="True">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Text="시스템 메시지: 표적을 생성하세요"
+           FontSize="16" FontWeight="SemiBold"
+           Foreground="Red">
+
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Visible"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Source={StaticResource LogVM}, Path=IsAnyTarget}" 
+                             Value="True">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </StackPanel>
         <!-- TargetPanel: 왼쪽 아래 (3/4, 1/4) -->
         <views:TargetPanel Grid.Row="0" Grid.Column="1" 
                        Margin="5" Background="LightGray"/>
