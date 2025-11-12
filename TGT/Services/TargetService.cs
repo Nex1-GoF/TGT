@@ -255,6 +255,10 @@ namespace TGT.Services
 
                     if (dist <= MapService.Instance.Distance)
                         t.IsDetected = true;
+                    else
+                    {
+                        t.IsDetected = false;
+                    }
                 }
 
                 //--------------------------------------------------
