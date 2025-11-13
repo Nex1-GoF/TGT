@@ -52,9 +52,10 @@ namespace TGT.ViewModels
         }
         public void HandleKeyInput(Key key)
         {
-            if (SelectedTarget == null)
+            if (_service.SelectedTarget == null)
                 return;
-            var t = _service.Targets.FirstOrDefault(x => x.Id == SelectedTarget.Id);
+            var t = _service.Targets.FirstOrDefault(x => x.Id == _service.SelectedTarget.Id);
+            Debug.WriteLine("yawzz "+ _service.SelectedTarget.Id);
             switch (key)
             {
                 case Key.Left:
