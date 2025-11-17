@@ -50,6 +50,25 @@ namespace TGT.ViewModels
             });
         }
 
+
+        partial void OnSelectedScenarioChanged(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return;
+
+            // 시나리오 경로가 있을 경우
+            var routes = ScenarioService.Instance;
+            if (!routes.ScenarioIds.Contains(value))
+                return;
+
+            if (routes.TryGetRoute(value, out var start, out var end))
+            {
+                StartLat = start.Lat;
+                StartLon = start.Lng;
+                EndLat = end.Lat;
+                EndLon = end.Lng;
+            }
+        }
         private void SetCommand(PointLatLng latLng , bool IsFirst)
         {
             if (IsFirst == true)

@@ -219,7 +219,7 @@ namespace TGT.ViewModels
                         StrokeThickness = 1.2,
                         Opacity = 0.9
                     },
-                    Offset = new Point(-6, -6),
+                    Offset = new Point(-10, -15),
                     Tag = key
                 };
 

@@ -7,20 +7,31 @@
         <vm:TargetCreationViewModel />
     </UserControl.DataContext>
 
-    <Border Background="#111D2E" CornerRadius="8" Padding="10">
-        <StackPanel>
-            <TextBlock Text="표적 생성 툴" Background="#222"
-Foreground="White"
-FontSize="16"
-FontWeight="Bold"
-Margin="0,0,0,8"
-Padding="10,4"
-HorizontalAlignment="Center"
-/>
-            
-            <!--Command="{Binding ToggleCreateModeCommand}"-->
+    <!-- 최상위 패널 -->
+    <Border Background="{StaticResource HudBgPanelBrush}"
+            BorderBrush="{StaticResource HudAccentDimBrush}"
+            BorderThickness="2"
+            CornerRadius="10"
+            Padding="14"
+            Margin="6">
 
-            <Border Background="#222" CornerRadius="8" Padding="10" >
+        <StackPanel>
+
+            <!-- 타이틀 -->
+            <TextBlock Text="표적 생성 툴"
+                       Foreground="{StaticResource HudAccentBrush}"
+                       FontSize="17"
+                       FontWeight="Bold"
+                       Margin="0 0 0 12"
+                       HorizontalAlignment="Center"/>
+
+            <!-- 내부 패널 -->
+            <Border Background="#0F1C28"
+                    BorderBrush="{StaticResource HudAccentDimBrush}"
+                    BorderThickness="1"
+                    CornerRadius="8"
+                    Padding="12">
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -28,52 +39,98 @@ HorizontalAlignment="Center"
                     </Grid.ColumnDefinitions>
 
                     <!-- 왼쪽 입력 -->
-                    <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                        <TextBlock Text="모델 구분" Foreground="White"/>
-                        <ComboBox Width="60" SelectedValue="{Binding DetectedType}"
-          SelectedValuePath="Content" >
-                            <ComboBoxItem Content="A" />
-                            <ComboBoxItem Content="B" />
-                            <ComboBoxItem Content="C" />
+                    <StackPanel Grid.Column="0" Margin="0 0 12 0">
+
+                        <TextBlock Text="모델 구분"
+                                   Foreground="{StaticResource HudTextBrush}"
+                                   Margin="0 0 4 2"/>
+
+                        <ComboBox Width="80"
+                                  SelectedValue="{Binding DetectedType}"
+                                  SelectedValuePath="Content"
+                                  Foreground="Black">
+                            <ComboBoxItem Content="A"/>
+                            <ComboBoxItem Content="B"/>
+                            <ComboBoxItem Content="C"/>
                         </ComboBox>
 
-                        <TextBlock Text="속도 (m/s)" Foreground="White"/>
-                        <TextBox Width="80" Text="{Binding Speed}"/>
+                        <TextBlock Text="속도 (m/s)"
+                                   Foreground="{StaticResource HudTextBrush}"
+                                   Margin="0 6 0 2"/>
+                        <TextBox Width="90"
+                                 Text="{Binding Speed}"
+                                 Background="#0A1922"
+                                 Foreground="{StaticResource HudTextBrush}"/>
 
-                        <TextBlock Text="고도 (m)" Foreground="White"/>
-                        <TextBox Width="80" Text="{Binding Altitude}"/>
+                        <TextBlock Text="고도 (m)"
+                                   Foreground="{StaticResource HudTextBrush}"
+                                   Margin="0 6 0 2"/>
+                        <TextBox Width="90"
+                                 Text="{Binding Altitude}"
+                                 Background="#0A1922"
+                                 Foreground="{StaticResource HudTextBrush}"/>
+
                     </StackPanel>
 
                     <!-- 오른쪽 입력 -->
                     <StackPanel Grid.Column="1">
-                        <TextBlock Text="시작 (Lat, Lon)" Foreground="White"/>
+
+                        <TextBlock Text="시작 위치 (Lat, Lon)"
+                                   Foreground="{StaticResource HudTextBrush}"
+                                   Margin="0 0 0 2"/>
+
                         <StackPanel Orientation="Horizontal">
-                            <TextBox Width="70" Text="{Binding StartLat}" Margin="0,0,5,0"/>
-                            <TextBox Width="70" Text="{Binding StartLon}"/>
+                            <TextBox Text="{Binding StartLat}"
+                                     Width="75"
+                                     Background="#0A1922"
+                                     Foreground="{StaticResource HudTextBrush}"
+                                     Margin="0 0 6 0"/>
+                            <TextBox Text="{Binding StartLon}"
+                                     Width="75"
+                                     Background="#0A1922"
+                                     Foreground="{StaticResource HudTextBrush}"/>
                         </StackPanel>
 
-                        <TextBlock Text="도착 (Lat, Lon)" Foreground="White"/>
+                        <TextBlock Text="도착 위치 (Lat, Lon)"
+                                   Foreground="{StaticResource HudTextBrush}"
+                                   Margin="0 8 0 2"/>
+
                         <StackPanel Orientation="Horizontal">
-                            <TextBox Width="70" Text="{Binding EndLat}" Margin="0,0,5,0"/>
-                            <TextBox Width="70" Text="{Binding EndLon}"/>
+                            <TextBox Text="{Binding EndLat}"
+                                     Width="75"
+                                     Background="#0A1922"
+                                     Foreground="{StaticResource HudTextBrush}"
+                                     Margin="0 0 6 0"/>
+                            <TextBox Text="{Binding EndLon}"
+                                     Width="75"
+                                     Background="#0A1922"
+                                     Foreground="{StaticResource HudTextBrush}"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,5,0,0">
+                        <!-- 시나리오 & 추가 버튼 -->
+                        <StackPanel Orientation="Horizontal"
+                            Margin="0 10 0 0"
+                            VerticalAlignment="Top">
 
-                            <!-- ⭐ 시나리오 선택 콤보박스 -->
-                            <ComboBox Width="100"
-                                  ItemsSource="{Binding ScenarioList}" 
-                                  SelectedItem="{Binding SelectedScenario}"
-                                  Margin="0,0,5,0"
-                                  Foreground="Black"/>
+                            <ComboBox ItemsSource="{Binding ScenarioList}"
+                                      SelectedItem="{Binding SelectedScenario}"
+                                      Width="110"
+                                      Margin="0 0 8 0"
+                                      Foreground="Black"/>
 
                             <Button Content="등록"
-                                Command="{Binding AddTargetCommand}"
-                                IsEnabled="{Binding CanAdd}"
-                                Margin="0,0,0,0"/>
-
+                                    Command="{Binding AddTargetCommand}"
+                                    IsEnabled="{Binding CanAdd}"
+                                    Padding="6 3"
+                                    Background="{StaticResource HudAccentDimBrush}"
+                                    BorderBrush="{StaticResource HudAccentBrush}"
+                                    BorderThickness="1"
+                                    Foreground="{StaticResource HudTextBrush}"
+                                    FontWeight="SemiBold"
+                                    />
                         </StackPanel>
                     </StackPanel>
+
                 </Grid>
             </Border>
         </StackPanel>

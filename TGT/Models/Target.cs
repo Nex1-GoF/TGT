@@ -23,17 +23,17 @@ namespace TGT.Models
             get => _yaw;
             set
             {
-                if (_yaw != value)
-                {
-                    _yaw = value;
-                    OnPropertyChanged(); // Yaw 바뀜을 알림
-                    OnPropertyChanged(nameof(CurYawDisplay));
-                }
+                int normalized = NormalizeYawRaw(value);
+
+                _yaw = normalized;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(CurYawDisplay));
             }
         }
         public (double Lat, double Lon) EndLoc { get; set; }
         public DateTime? DetectTime { get; set; }
-        public string ScenarioId { get; set; }
+        public string ScenarioId { get; set; } = string.Empty;
+        public bool ScenarioRunning { get; set; }
 
         private (double Lat, double Lon) _curLoc;
         public (double Lat, double Lon) CurLoc
@@ -54,8 +54,17 @@ namespace TGT.Models
         public bool IsMoving
         {
             get => _isMoving;
-            set { _isMoving = value; OnPropertyChanged(); }
+            set
+            {
+                if (_isMoving != value) // 값이 변경될 때만 갱신
+                {
+                    _isMoving = value;
+                    OnPropertyChanged(nameof(IsMoving)); // 1. IsMoving 갱신 알림
+                    OnPropertyChanged(nameof(CanStart)); // 2. CanStart 갱신 알림 (필수!)
+                }
+            }
         }
+        public bool CanStart => !IsMoving;
 
         private bool _isDetected;
 
@@ -67,7 +76,16 @@ namespace TGT.Models
         // Todo: 시나리오 모드인지 아닌지 추가
 
 
+        private int NormalizeYawRaw(int raw)
+        {
+            // raw = deg * 100
+            double deg = raw / 100.0;
 
+            // 0~360 범위로 정규화
+            double norm = (deg % 360.0 + 360.0) % 360.0;
+
+            return (int)Math.Round(norm * 100);
+        }
 
         public List<(double Lat, double Lon)> PathHistory { get; } = new();
 

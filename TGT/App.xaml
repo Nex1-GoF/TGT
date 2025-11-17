@@ -5,5 +5,19 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+        <Color x:Key="HudBgDark">#0A1922</Color>
+        <Color x:Key="HudBgPanel">#112431</Color>
+        <Color x:Key="HudAccent">#45E8E1</Color>
+        <Color x:Key="HudAccentDim">#2B7480</Color>
+        <Color x:Key="HudText">#AEE8F3</Color>
+        <Color x:Key="HudWarning">#FFDD33</Color>
+
+        <SolidColorBrush x:Key="HudBgPanelBrush" Color="{StaticResource HudBgPanel}"/>
+        <SolidColorBrush x:Key="HudAccentBrush" Color="{StaticResource HudAccent}"/>
+        <SolidColorBrush x:Key="HudAccentDimBrush" Color="{StaticResource HudAccentDim}"/>
+        <SolidColorBrush x:Key="HudTextBrush" Color="{StaticResource HudText}"/>
+        <SolidColorBrush x:Key="HudWarningBrush" Color="{StaticResource HudWarning}"/>
+
     </Application.Resources>
 </Application>

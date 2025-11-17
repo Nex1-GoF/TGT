@@ -27,13 +27,13 @@ namespace TGT.Services
         public Int32 Latitude { get; set; }            // 위도 (4 bytes, ×1e7)
         public Int32 Longtitude { get; set; }           // 경도 (4 bytes, ×1e7)
         public Int16 Altitude { get; set; }            // 고도 (2 bytes)
-        public Int16 Yaw { get; set; }                 // 요 (2 bytes)
+        public UInt16 Yaw { get; set; }                 // 요 (2 bytes)
         public UInt64 DetectedTime { get; set; }       // 탐지 시간 (8 bytes)
         public UInt16 Speed { get; set; }              // 속도 (2 bytes)
         public char DetectedType { get; set; }         // 탐지체 구분 (1 byte)
 
         public TgtInfoPakcet(string srcId, string desId, UInt32 seq, byte msgSize,
-                                char detectedId, Int32 latitude, Int32 longtitude, Int16 altitude, Int16 yaw,
+                                char detectedId, Int32 latitude, Int32 longtitude, Int16 altitude, UInt16 yaw,
                                 UInt64 detectedTime, UInt16 speed, char detectedType)
         {
             SrcId = srcId;
@@ -94,7 +94,7 @@ namespace TGT.Services
             Latitude = BitConverter.ToInt32(span.Slice(offset, 4)); offset += 4;
             Longtitude = BitConverter.ToInt32(span.Slice(offset, 4)); offset += 4;
             Altitude = BitConverter.ToInt16(span.Slice(offset, 2)); offset += 2;
-            Yaw = BitConverter.ToInt16(span.Slice(offset, 2)); offset += 2;
+            Yaw = BitConverter.ToUInt16(span.Slice(offset, 2)); offset += 2;
             DetectedTime = BitConverter.ToUInt64(span.Slice(offset, 8)); offset += 8;
             Speed = BitConverter.ToUInt16(span.Slice(offset, 2)); offset += 2;
 
@@ -284,7 +284,7 @@ namespace TGT.Services
         {
             TgtInfoPakcet packet = new TgtInfoPakcet("T001", "C001", 0, TgtInfoPakcet.TGT_INFO_PACKET_SIZE,
                                                     target.Id, (Int32)(target.CurLoc.Lat * 1e7), (Int32)(target.CurLoc.Lon * 1e7),
-                                                    (Int16)target.Altitude, (Int16)target.Yaw,
+                                                    (Int16)target.Altitude, (UInt16)target.Yaw,
                                                     (UInt64)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                                                     (UInt16)target.Speed, target.DetectedType);
             var buffer = packet.Serialize();
@@ -352,12 +352,6 @@ namespace TGT.Services
                 target.PathHistory.Clear();
                 target.PathHistory.Add(target.CurLoc);
             }
-        }
-
-        public void StartAll()
-        {
-            foreach (var t in Targets)
-                t.IsMoving = true;
         }
         public class TargetListChangedMessage { }
 

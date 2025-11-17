@@ -34,12 +34,13 @@ namespace TGT.Services
         {
             // 맵 초기화
             _map = map;
-            _map.MapProvider = GMap.NET.MapProviders.GoogleMapProvider.Instance;
+            _map.MapProvider = CartoDarkMapProvider.Instance;
+            GMaps.Instance.Mode = AccessMode.ServerAndCache;
             _map.MinZoom = 2;
             _map.MaxZoom = 18;
             _map.Zoom = 8;
             _map.Position = Center;
-            _map.CanDragMap = false;
+            _map.CanDragMap = true;
             
             // 원 그리기
         }

@@ -35,16 +35,37 @@ namespace TGT.ViewModels
         }
 
         [RelayCommand]
-        private void StartAll()
+        private async Task StartAll()
         {
-            _service.StartAll();
+            var tasks = Targets
+                .Where(t => !t.IsMoving)        // 이미 움직이는 표적 제외
+                .Select(t => RunTargetAsync(t)) // 비동기 실행 묶기
+                .ToList();
+
+            await Task.WhenAll(tasks); // 전체 완료까지 기다림
         }
-        [RelayCommand]
+
+
+
+        private async Task RunTargetAsync(Target t)
+        {
+            if (t.IsMoving) return;
+
+            t.IsMoving = true;
+            _service.StartTarget(t.Id);
+
+            await ScenarioService.Instance.StartScenario(t);
+
+            t.IsMoving = false;
+            _service.RemoveTarget(t);
+        }
+
+        [RelayCommand(AllowConcurrentExecutions = true)]
         private async Task StartTarget(Target t)
         {
-            _service.StartTarget(t.Id);
-            await ScenarioService.Instance.StartScenario(t);
+            await RunTargetAsync(t);
         }
+
 
         // 태현 -- 표적 포커스 변경
         [RelayCommand]
@@ -57,8 +78,6 @@ namespace TGT.ViewModels
             if (_service.SelectedTarget == null)
                 return;
             var t = _service.Targets.FirstOrDefault(x => x.Id == _service.SelectedTarget.Id);
-            Debug.WriteLine("yawzz "+ _service.SelectedTarget.Id);
-
 
 
             switch (key)

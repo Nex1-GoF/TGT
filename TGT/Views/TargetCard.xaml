@@ -3,40 +3,81 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
 
-    <Border Background="#112233" CornerRadius="6" Margin="6" Padding="10">
+    <Border Background="{StaticResource HudBgPanelBrush}"
+            BorderBrush="{StaticResource HudAccentDimBrush}"
+            BorderThickness="1.5"
+            CornerRadius="6"
+            Margin="8"
+            Padding="12">
+
+        <!-- 클릭 이벤트 -->
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
-                <i:InvokeCommandAction Command="{Binding DataContext.SelectTargetCommand,
-                                                        RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                       CommandParameter="{Binding}" />
+                <i:InvokeCommandAction 
+                    Command="{Binding DataContext.SelectTargetCommand,
+                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                    CommandParameter="{Binding}" />
             </i:EventTrigger>
         </i:Interaction.Triggers>
 
         <StackPanel>
-            <TextBlock Text="{Binding Id}" Foreground="White" FontWeight="Bold" FontSize="14"/>
-            <TextBlock Text="{Binding DetectedType, StringFormat='모델: {0}'}" Foreground="White"/>
-            <TextBlock Text="{Binding Speed, StringFormat='속도: {0} m/s'}" Foreground="White"/>
-            <TextBlock Text="{Binding CurYawDisplay, StringFormat='Yaw: {0} m/s'}" Foreground="White"/>
-            <TextBlock Text="{Binding Altitude, StringFormat='고도: {0} m'}" Foreground="White" Margin="0,0,0,6"/>
 
-            <TextBlock Text="{Binding CurLocDisplay, StringFormat='현재위치: {0}'}" Foreground="White"/>
-            <TextBlock Text="{Binding EndLocDisplay, StringFormat='목표위치: {0}'}" Foreground="White"/>
-            <TextBlock Text="{Binding IsDetected, StringFormat='탐지여부: {0}'}" Foreground="White"/>
-            <Button Content="시작"
-                    Command="{Binding DataContext.StartTargetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                    CommandParameter="{Binding}"
-                    Background="#007ACC"
-                    Foreground="White"
-                    Margin="0,6,0,0"/>
-            <Button Content="삭제"
-                    Command="{Binding DataContext.RemoveTargetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                    CommandParameter="{Binding}"
-                    Grid.Column="1"
-                    Background="#B30000"
-                    Foreground="White"
-                    Margin="10,0,0,0"
-                    Padding="4,2"/>
+            <!-- 표적 ID -->
+            <TextBlock Text="{Binding Id}"
+                       Foreground="{StaticResource HudAccentBrush}"
+                       FontWeight="Bold"
+                       FontSize="16"
+                       Margin="0 0 0 6"/>
+
+            <!-- 표적 상세 -->
+            <TextBlock Text="{Binding DetectedType, StringFormat='모델: {0}'}"
+                       Foreground="{StaticResource HudTextBrush}" />
+            <TextBlock Text="{Binding Speed, StringFormat='속도: {0} m/s'}"
+                       Foreground="{StaticResource HudTextBrush}" />
+            <TextBlock Text="{Binding CurYawDisplay, StringFormat='Yaw: {0}°'}"
+                       Foreground="{StaticResource HudTextBrush}" />
+            <TextBlock Text="{Binding Altitude, StringFormat='고도: {0} m'}"
+                       Foreground="{StaticResource HudTextBrush}"
+                       Margin="0 0 0 8"/>
+
+            <TextBlock Text="{Binding CurLocDisplay, StringFormat='현재 위치: {0}'}"
+                       Foreground="{StaticResource HudTextBrush}" />
+            <TextBlock Text="{Binding EndLocDisplay, StringFormat='목표 위치: {0}'}"
+                       Foreground="{StaticResource HudTextBrush}" />
+            <TextBlock Text="{Binding IsDetected, StringFormat='탐지 여부: {0}'}"
+                       Foreground="{StaticResource HudTextBrush}"
+                       Margin="0 0 0 10"/>
+
+            <!-- 버튼 영역 -->
+            <StackPanel Orientation="Horizontal">
+
+                <!-- 시작 버튼: HUD 청록 버튼 -->
+                <Button Content="시작"
+                        Command="{Binding DataContext.StartTargetCommand,
+                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        IsEnabled="{Binding CanStart}"
+                        Background="{StaticResource HudAccentDimBrush}"
+                        Foreground="{StaticResource HudTextBrush}"
+                        FontWeight="SemiBold"
+                        Padding="6 3"
+                        Width="80"
+                        BorderThickness="1"/>
+
+                <!-- 삭제 버튼: 경고톤 -->
+                <Button Content="삭제"
+                        Command="{Binding DataContext.RemoveTargetCommand,
+                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                        CommandParameter="{Binding}"
+                        Margin="12 0 0 0"
+                        Background="#66000000"
+                        Foreground="{StaticResource HudWarningBrush}"
+                        BorderThickness="1"
+                        Padding="6 3"
+                        Width="80"
+                        FontWeight="SemiBold"/>
+            </StackPanel>
+
         </StackPanel>
-        
     </Border>
 </UserControl>
