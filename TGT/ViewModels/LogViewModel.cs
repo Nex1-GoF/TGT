@@ -12,7 +12,7 @@ namespace TGT.ViewModels
         [ObservableProperty]
         private bool isAnyTarget;
        
-        LogViewModel() { isAnyTarget = false; }
+        public LogViewModel() { isAnyTarget = false; }
     }
 
 }

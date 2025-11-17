@@ -33,6 +33,7 @@ namespace TGT.Models
         }
         public (double Lat, double Lon) EndLoc { get; set; }
         public DateTime? DetectTime { get; set; }
+        public string ScenarioId { get; set; }
 
         private (double Lat, double Lon) _curLoc;
         public (double Lat, double Lon) CurLoc
@@ -62,6 +63,11 @@ namespace TGT.Models
             get => _isDetected;
             set { _isDetected = value; OnPropertyChanged(); }
         }
+
+        // Todo: 시나리오 모드인지 아닌지 추가
+
+
+
 
         public List<(double Lat, double Lon)> PathHistory { get; } = new();
 

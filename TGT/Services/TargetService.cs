@@ -299,7 +299,8 @@ namespace TGT.Services
             while (true)
             {
                 var result = await rxSocket.ReceiveFromAsync(new ArraySegment<byte>(buffer), SocketFlags.None, remoteEP);
-
+                //Target ReceiveTarget = 받은 패킷까서 해당 id 타겟
+                //RemoveTarget(ReceiveTarget);
                 // 격추 알려주는 로직
             }
         }
@@ -359,6 +360,19 @@ namespace TGT.Services
                 t.IsMoving = true;
         }
         public class TargetListChangedMessage { }
+
+        public void RemoveTargetWithid(char id)
+        {
+            Target target = FindTarget(id);
+            if (target != null) return;
+            Targets.Remove(target);
+            WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
+            WeakReferenceMessenger.Default.Send(new TargetListChangedMessage());
+            var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
+            if (logVM != null)
+                logVM.IsAnyTarget = Targets.Count > 0;
+        }
+
         public void RemoveTarget(Target target)
         {
             Targets.Remove(target);
@@ -384,6 +398,8 @@ namespace TGT.Services
                 WeakReferenceMessenger.Default.Send(new TargetSelectMessage(new TargetSelectData("NULL")));
                 return;
             }
+
+            // Todo: 여기서 시나리오 모드라면, 작동 안되게끔
 
             SelectedTarget = selected;
             WeakReferenceMessenger.Default.Send(new TargetSelectMessage(new TargetSelectData(selected.Id.ToString())));

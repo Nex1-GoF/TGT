@@ -58,10 +58,20 @@ HorizontalAlignment="Center"
                             <TextBox Width="70" Text="{Binding EndLon}"/>
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,5,0,0">
-                            <Button Content="등록" Command="{Binding AddTargetCommand}"
-        IsEnabled="{Binding CanAdd}" Margin="0,0,5,0"/>
-                            <!--Button Content="초기화" Command="{Binding ResetCommand}"/-->
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,5,0,0">
+
+                            <!-- ⭐ 시나리오 선택 콤보박스 -->
+                            <ComboBox Width="100"
+                                  ItemsSource="{Binding ScenarioList}" 
+                                  SelectedItem="{Binding SelectedScenario}"
+                                  Margin="0,0,5,0"
+                                  Foreground="Black"/>
+
+                            <Button Content="등록"
+                                Command="{Binding AddTargetCommand}"
+                                IsEnabled="{Binding CanAdd}"
+                                Margin="0,0,0,0"/>
+
                         </StackPanel>
                     </StackPanel>
                 </Grid>

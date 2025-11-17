@@ -28,11 +28,17 @@ namespace TGT.ViewModels
         [ObservableProperty] private double startLon = 127;
         [ObservableProperty] private double endLat = 37;
         [ObservableProperty] private double endLon = 127;
+        [ObservableProperty] private ObservableCollection<string> scenarioList = new();
+        [ObservableProperty] private string selectedScenario;
+
 
         private static char _nextId = '1';
         public TargetCreationViewModel()
         {
             DetectedType = 'A';
+            SelectedScenario = "Default";
+
+            ScenarioList = new ObservableCollection<string>(ScenarioService.Instance.ScenarioIds);
             WeakReferenceMessenger.Default.Register<MapClickMessage>(this, (r, msg) =>
             {
                 var data = msg.Value;
@@ -107,7 +113,8 @@ namespace TGT.ViewModels
                 Altitude = altitude,
                 CurLoc = (startLat, startLon),
                 EndLoc = (endLat, endLon),
-                Yaw = yawInt
+                Yaw = yawInt,
+                ScenarioId = SelectedScenario
             };
 
             TargetService.Instance.AddTarget(target);

@@ -16,6 +16,7 @@ namespace TGT.ViewModels
     public partial class TargetViewModel : ObservableObject
     {
         private readonly TargetService _service;
+        private readonly ScenarioService _scenarioService = ScenarioService.Instance;
         public ObservableCollection<Target> Targets => _service.Targets;
 
 
@@ -39,9 +40,10 @@ namespace TGT.ViewModels
             _service.StartAll();
         }
         [RelayCommand]
-        private void StartTarget(Target t)
+        private async Task StartTarget(Target t)
         {
             _service.StartTarget(t.Id);
+            await ScenarioService.Instance.StartScenario(t);
         }
 
         // 태현 -- 표적 포커스 변경
@@ -56,11 +58,15 @@ namespace TGT.ViewModels
                 return;
             var t = _service.Targets.FirstOrDefault(x => x.Id == _service.SelectedTarget.Id);
             Debug.WriteLine("yawzz "+ _service.SelectedTarget.Id);
+
+
+
             switch (key)
             {
                 case Key.Left:
                     t.Yaw -= 200;
                     if (t.Yaw < 0) t.Yaw += 36000;
+                    //_scenarioService.AddKeyInputData()
                     break;
                 case Key.Right:
                     t.Yaw += 200;
