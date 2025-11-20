@@ -6,8 +6,245 @@
     <Application.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
 
+
+
+        <!-- Color Pelatte -->
+        <Color x:Key="DarkPanelColor">#1f1f1f</Color>
+
+        <Color x:Key="KeyColor">#677e5b</Color>
+        <Color x:Key="KeyColorDark">#3c4336</Color>
+        <Color x:Key="KeyColorRev">#8FAF7C</Color>
+
+        <Color x:Key="SubColor">#bcc0c4</Color>
+        <Color x:Key="SubColor2">#ffffff</Color>
+        <Color x:Key="SubColor3">#bababa</Color>
+        <Color x:Key="SubColor4">#ff3131</Color>
+        
+        <Color x:Key="KeyColorDim">#1f1f1f</Color>
+        <Color x:Key="KeyColorDim2">#201f1f</Color>
+
+
+
+
+        <!-- fonts-->
+        <FontFamily x:Key="JetbrainBold">
+            pack://application:,,,/C2;component/Resources/Fonts/#JetBrains Mono
+        </FontFamily>
+        <FontFamily x:Key="JetbrainMedium">
+            pack://application:,,,/C2;component/Resources/Fonts/#JetBrains Mono Medium
+        </FontFamily>
+        <FontFamily x:Key="NanumLight">
+            pack://application:,,,/C2;component/Resources/Fonts/#나눔스퀘어 네오 Light
+        </FontFamily>
+        <FontFamily x:Key="NanumBold">
+            pack://application:,,,/C2;component/Resources/Fonts/#나눔스퀘어 네오 Bold
+        </FontFamily>
+        <FontFamily x:Key="NanumHeavy">
+            pack://application:,,,/C2;component/Resources/Fonts/#나눔스퀘어 네오 Heavy
+        </FontFamily>
+
+
+
+        <!-- Color Brushes -->
+        <SolidColorBrush x:Key="TargetPanelBrush" Color="{StaticResource KeyColorDim}"/>
+
+        
+        
+        <!-- 타겟 카드 Color Brushes -->
+        <SolidColorBrush x:Key="TargetCardIDTextBrush" Color="{StaticResource SubColor}"/>
+        <!-- 타겟 카드 ID 컬러-->
+        <SolidColorBrush x:Key="TargetCardFlightIDTextBrush" Color="{StaticResource SubColor2}"/>
+        <!-- 타겟 카드 표적 ID 컬러-->
+        <SolidColorBrush x:Key="TargetCardDetectedIDTextBrush" Color="{StaticResource SubColor4}"/>
+        <!-- 타겟 카드 디텍티드 컬러-->
+        <SolidColorBrush x:Key="StartEndTextBrush" Color="{StaticResource SubColor3}"/>
+        <!--  탐지시각 표시 -->
+        
+        <SolidColorBrush x:Key="TargetCardStrokeBrush" Color="{StaticResource KeyColor}"/>
+        <!-- 카드 가장자리 -->
+        <SolidColorBrush x:Key="TargetCardContentBlockBrush" Color="{StaticResource KeyColorDark}"/>
+        <!-- 위도, 경도, 고도 감싸는 블럭 -->
+        <SolidColorBrush x:Key="TargetCardBrush" Color="{StaticResource KeyColorDim}"/>
+        <!-- 카드 -->
+        <SolidColorBrush x:Key="TargetCardFocusedHeaderBrush" Color="{StaticResource KeyColor}"/>
+        <!-- 포커스 카드 헤더 -->
+        <SolidColorBrush x:Key="TargetContentTextBrush" Color="{StaticResource SubColor2}"/>
+        <!--위도 경도 고도 방향.. 컬러-->
+        <SolidColorBrush x:Key="TargetStartEndBrush" Color="{StaticResource SubColor2}"/>
+        <!--시작, 종단-->
+        
+
+        <!-- 타겟 생성부 Color Brushes -->
+        <SolidColorBrush x:Key="TargetCreatorHeadPenalBrush" Color="{StaticResource KeyColorDim2}"/>
+        
+        <SolidColorBrush x:Key="TargetCreatorHeadPenalTextBrush" Color="{StaticResource SubColor2}"/>
+        <!-- 표적생성 헤더 패널컬러-->
+        <SolidColorBrush x:Key="TargetCreatorTextBoxColorBrush" Color="{StaticResource KeyColorDim}"/>
+        <!-- 표적생성 텍스트박스 컬러-->
+        <SolidColorBrush x:Key="TargetCreatorTextBoxStrokeColorBrush" Color="{StaticResource SubColor2}"/>
+        <!-- 표적생성 텍스트박스 가장자리 컬러-->
+        <SolidColorBrush x:Key="TargetCreatorTextBlockColorBrush" Color="{StaticResource SubColor3}"/>
+        <!-- 표적생성 텍스트블럭 컬러-->
+        <SolidColorBrush x:Key="TargetCreatorContentColor" Color="{StaticResource SubColor2}"/>
+        <!-- 표적생성 텍스트블럭 컬러-->
+        <SolidColorBrush x:Key="TargetCreatorContentColor2" Color="{StaticResource SubColor3}"/>
+        <!-- 표적생성 텍스트블럭 컬러-->
+
+
+
+        <!-- 타겟 카드 -->
+        <Style x:Key="MissilePanelHeaderTextStyle" TargetType="TextBlock"><!-- TGT-001 -->
+
+            <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource JetbrainBold}"/>
+            <Setter Property="FontSize" Value="24"/>
+        </Style>
+
+        <Style x:Key="TargetCardFlightIdTextStyle" TargetType="TextBlock">
+            <!-- MIG29 -->
+            <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        <Style x:Key="TargetDetectedColor" TargetType="TextBlock">
+            <!-- MIG29 -->
+            <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+
+        <Style x:Key="TargetContentTextStyle" TargetType="TextBlock">
+            <!-- 위도 경도 고도 -->
+            <Setter Property="Foreground" Value="{StaticResource TargetContentTextBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+
+        <Style x:Key="TargetStartEndTextStyle" TargetType="TextBlock">
+            <!-- 시작 끝 -->
+            <Setter Property="Foreground" Value="{StaticResource TargetCreatorContentColor2}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+        <!-- 표적 생성부 -->
+        <Style x:Key="TargetCreationPenalTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TargetCreatorHeadPenalTextBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+
+
+
+        <!--버튼 스타일-->
+        <Style x:Key="DefaultButtonStyle" TargetType="Button">
+            <!-- 기본 상태 -->
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="White"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="4"
+                      Background="{TemplateBinding Background}"
+                      BorderBrush="{TemplateBinding BorderBrush}"
+                      BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter 
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      TextElement.FontSize="{TemplateBinding FontSize}"
+                      TextElement.FontWeight="{TemplateBinding FontWeight}"
+                      TextElement.Foreground="{TemplateBinding Foreground}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!-- 기본 색 -->
+            <Setter Property="Background" Value="#677E5B"/>
+
+            <!-- Hover -->
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#506849"/>
+                </Trigger>
+
+                <!-- Pressed -->
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#394A32"/>
+                </Trigger>
+
+                <!-- Disabled -->
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
+        <!-- 일괄 발사 버튼 스타일 -->
+        <Style x:Key="StartAllButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="#677E5B"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="4"
+                            Background="{TemplateBinding Background}">
+                            <ContentPresenter 
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="4"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <!-- Hover -->
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#00B560"/>
+                </Trigger>
+
+                <!-- Pressed -->
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#007A3A"/>
+                </Trigger>
+
+                <!-- Disabled -->
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Opacity" Value="0.4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
+
+
+
+
+
+
+
+
+
+
         <Color x:Key="HudBgDark">#0A1922</Color>
-        <Color x:Key="HudBgPanel">#112431</Color>
+        <Color x:Key="HudBgPanel">#112431</Color> <!-- -->
         <Color x:Key="HudAccent">#45E8E1</Color>
         <Color x:Key="HudAccentDim">#2B7480</Color>
         <Color x:Key="HudText">#AEE8F3</Color>
@@ -18,6 +255,11 @@
         <SolidColorBrush x:Key="HudAccentDimBrush" Color="{StaticResource HudAccentDim}"/>
         <SolidColorBrush x:Key="HudTextBrush" Color="{StaticResource HudText}"/>
         <SolidColorBrush x:Key="HudWarningBrush" Color="{StaticResource HudWarning}"/>
+        
+        
+        
+        
+        
 
     </Application.Resources>
 </Application>

@@ -135,7 +135,7 @@ namespace TGT.Services
 
         // 기존 그대로
         public ObservableCollection<Target> Targets { get; } = new();
-        public Target? SelectedTarget;
+        //public Target? SelectedTarget;
 
         // === 소켓 ===
         private static string DestIp = "127.0.0.1";
@@ -146,16 +146,16 @@ namespace TGT.Services
         private IPEndPoint ep;
 
         private Socket rxSocket;
-
+        public Target? SelectedTarget { get; set; } = null;
         private TargetService()
         {
             txSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             ipAddress = IPAddress.Parse(DestIp);
             ep = new IPEndPoint(ipAddress, DestPort);
 
-            rxSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            rxSocket.Bind(new IPEndPoint(IPAddress.Any, 6004));
-            Task.Run(StartReceivingAsync);
+            //rxSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            //rxSocket.Bind(new IPEndPoint(IPAddress.Any, 6004));
+            //Task.Run(StartReceivingAsync);
 
             // ✅ 정확히 100Hz 고정 루프 시작
             _updateThread = new Thread(UpdateLoop)
@@ -247,19 +247,16 @@ namespace TGT.Services
                 {
                     SendtoC2Async(t);
                 }
+                double dLatM = (newLat - lat0) * 111000.0;
+                double dLonM = (newLon - lon0) * 111000.0 * Math.Cos(lat0 * Math.PI / 180.0);
+                double dist = Math.Sqrt(dLatM * dLatM + dLonM * dLonM);
+                if (dist <= MapService.Instance.Distance)
+                    t.IsDetected = true;
                 else
                 {
-                    double dLatM = (newLat - lat0) * 111000.0;
-                    double dLonM = (newLon - lon0) * 111000.0 * Math.Cos(lat0 * Math.PI / 180.0);
-                    double dist = Math.Sqrt(dLatM * dLatM + dLonM * dLonM);
-
-                    if (dist <= MapService.Instance.Distance)
-                        t.IsDetected = true;
-                    else
-                    {
-                        t.IsDetected = false;
-                    }
+                    t.IsDetected = false;
                 }
+       
 
                 //--------------------------------------------------
                 // ⑥ 메시지 패킹

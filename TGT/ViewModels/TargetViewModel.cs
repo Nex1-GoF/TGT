@@ -1,13 +1,18 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
+using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
 
@@ -16,7 +21,6 @@ namespace TGT.ViewModels
     public partial class TargetViewModel : ObservableObject
     {
         private readonly TargetService _service;
-        private readonly ScenarioService _scenarioService = ScenarioService.Instance;
         public ObservableCollection<Target> Targets => _service.Targets;
 
 
@@ -27,6 +31,11 @@ namespace TGT.ViewModels
         {
             _service = service;
             InputEventBroker.OnKeyInput += HandleKeyInput;
+            WeakReferenceMessenger.Default.Register<TargetSelectMessage>(this, (r, msg) =>
+            {
+                selectedTarget = _service.SelectedTarget;
+            });
+
         }
         [RelayCommand]
         private void RemoveTarget(Target target)
@@ -94,4 +103,7 @@ namespace TGT.ViewModels
             }
         }
     }
+
+
+
 }

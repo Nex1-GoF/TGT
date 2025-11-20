@@ -15,7 +15,7 @@
     <Grid>
         <!-- 행: 위 3/4, 아래 1/4 -->
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="5*"/>
+            <ColumnDefinition Width="6*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
 

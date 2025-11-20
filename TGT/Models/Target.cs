@@ -43,12 +43,17 @@ namespace TGT.Models
             {
                 _curLoc = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CurLatDisplay));
+                OnPropertyChanged(nameof(CurLonDisplay));
                 OnPropertyChanged(nameof(CurLocDisplay));
             }
         }
-        public string CurYawDisplay => $"{Yaw:F5}";
-        public string CurLocDisplay => $"{CurLoc.Lat:F5}, {CurLoc.Lon:F5}";
-        public string EndLocDisplay => $"{EndLoc.Lat:F5}, {EndLoc.Lon:F5}";
+        public string CurYawDisplay => $"{(double)Yaw / 100.0:F3}";
+        public string CurLocDisplay => $"{CurLoc.Lat:F3}, {CurLoc.Lon:F3}";
+        public string EndLocDisplay => $"{EndLoc.Lat:F3}, {EndLoc.Lon:F3}";
+
+        public string CurLatDisplay => $"{CurLoc.Lat:F3}";
+        public string CurLonDisplay => $"{CurLoc.Lon:F3}";
 
         private bool _isMoving;
         public bool IsMoving

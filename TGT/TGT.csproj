@@ -9,6 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Fonts\JetBrainsMono-Bold.ttf" />
+    <None Remove="Resources\Fonts\JetBrainsMono-Medium.ttf" />
+    <None Remove="Resources\Fonts\NanumSquareNeo-aLt.ttf" />
+    <None Remove="Resources\Fonts\NanumSquareNeo-bRg.ttf" />
+    <None Remove="Resources\Fonts\NanumSquareNeo-cBd.ttf" />
+    <None Remove="Resources\Fonts\NanumSquareNeo-dEb.ttf" />
+    <None Remove="Resources\Fonts\NanumSquareNeo-eHv.ttf" />
+    <None Remove="Resources\target2.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="GMap.NET.Core" Version="2.1.7" />
     <PackageReference Include="GMap.NET.WinPresentation" Version="2.1.7" />
@@ -17,6 +28,33 @@
 
   <ItemGroup>
     <Folder Include="Converters\NewFolder\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Fonts\JetBrainsMono-Bold.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fonts\JetBrainsMono-Medium.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fonts\NanumSquareNeo-aLt.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fonts\NanumSquareNeo-bRg.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fonts\NanumSquareNeo-cBd.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fonts\NanumSquareNeo-dEb.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fonts\NanumSquareNeo-eHv.ttf">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\target2.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

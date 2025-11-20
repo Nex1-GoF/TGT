@@ -1,15 +1,17 @@
 ﻿<UserControl x:Class="TGT.Views.TargetCard"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+             xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:local="clr-namespace:TGT.Views">
 
-    <Border Background="{StaticResource HudBgPanelBrush}"
-            BorderBrush="{StaticResource HudAccentDimBrush}"
-            BorderThickness="1.5"
-            CornerRadius="6"
-            Margin="8"
-            Padding="12">
-
+    <UserControl.Resources>
+        <local:TargetFocusedToBackgroundConverter x:Key="TargetFocusedToBackgroundConverter"/>
+        
+    </UserControl.Resources>    
+    
+        <Border CornerRadius="8"
+             Background="{StaticResource TargetCardBrush}"
+             MouseLeftButtonDown="Card_MouseLeftButtonDown">
         <!-- 클릭 이벤트 -->
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
@@ -19,65 +21,327 @@
                     CommandParameter="{Binding}" />
             </i:EventTrigger>
         </i:Interaction.Triggers>
+        <!-- 선택 강조 -->
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <!-- 상태 + ID -->
+            <Border Padding="6"
+            BorderBrush="{StaticResource TargetCardStrokeBrush}"
+            CornerRadius="6,6,0,0"
+            BorderThickness="4,4,4,2">
 
-        <StackPanel>
+                <Border.Background>
+                    <MultiBinding Converter="{StaticResource TargetFocusedToBackgroundConverter}">
+                        <Binding />
+                        <!-- current Target -->
+                        <Binding Path="DataContext.SelectedTarget"
+                            RelativeSource="{RelativeSource AncestorType=ItemsControl}" />
+                    </MultiBinding>
+                </Border.Background>
 
-            <!-- 표적 ID -->
-            <TextBlock Text="{Binding Id}"
-                       Foreground="{StaticResource HudAccentBrush}"
-                       FontWeight="Bold"
-                       FontSize="16"
-                       Margin="0 0 0 6"/>
+                <Grid >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- 표적 상세 -->
-            <TextBlock Text="{Binding DetectedType, StringFormat='모델: {0}'}"
-                       Foreground="{StaticResource HudTextBrush}" />
-            <TextBlock Text="{Binding Speed, StringFormat='속도: {0} m/s'}"
-                       Foreground="{StaticResource HudTextBrush}" />
-            <TextBlock Text="{Binding CurYawDisplay, StringFormat='Yaw: {0}°'}"
-                       Foreground="{StaticResource HudTextBrush}" />
-            <TextBlock Text="{Binding Altitude, StringFormat='고도: {0} m'}"
-                       Foreground="{StaticResource HudTextBrush}"
-                       Margin="0 0 0 8"/>
 
-            <TextBlock Text="{Binding CurLocDisplay, StringFormat='현재 위치: {0}'}"
-                       Foreground="{StaticResource HudTextBrush}" />
-            <TextBlock Text="{Binding EndLocDisplay, StringFormat='목표 위치: {0}'}"
-                       Foreground="{StaticResource HudTextBrush}" />
-            <TextBlock Text="{Binding IsDetected, StringFormat='탐지 여부: {0}'}"
-                       Foreground="{StaticResource HudTextBrush}"
-                       Margin="0 0 0 10"/>
+                    <TextBlock Text="{Binding Id, StringFormat='TGT-00{0}'}"
+                   Style="{StaticResource MissilePanelHeaderTextStyle}"
+                   VerticalAlignment="Center" Margin="0,0,0,8"
+                   Grid.Column="0"/>
+                    <Border Grid.Column="1"/>
+                    <TextBlock Text="{Binding TargetInfoName}" Grid.Column="2"
+                   Style="{StaticResource TargetCardFlightIdTextStyle}"
+                   VerticalAlignment="Bottom"/>
+                </Grid>
 
-            <!-- 버튼 영역 -->
-            <StackPanel Orientation="Horizontal">
 
-                <!-- 시작 버튼: HUD 청록 버튼 -->
-                <Button Content="시작"
-                        Command="{Binding DataContext.StartTargetCommand,
-                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                        CommandParameter="{Binding}"
-                        IsEnabled="{Binding CanStart}"
-                        Background="{StaticResource HudAccentDimBrush}"
-                        Foreground="{StaticResource HudTextBrush}"
-                        FontWeight="SemiBold"
-                        Padding="6 3"
-                        Width="80"
-                        BorderThickness="1"/>
+            </Border>
+            <Border 
+                Background="{StaticResource TargetCardBrush}"
+                BorderBrush="{StaticResource TargetCardStrokeBrush}"
+                CornerRadius="0,0,6,6"
+                BorderThickness="4,2,4,4"
+                Padding="8"
+                Grid.Row="1">
 
-                <!-- 삭제 버튼: 경고톤 -->
-                <Button Content="삭제"
-                        Command="{Binding DataContext.RemoveTargetCommand,
-                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                        CommandParameter="{Binding}"
-                        Margin="12 0 0 0"
-                        Background="#66000000"
-                        Foreground="{StaticResource HudWarningBrush}"
-                        BorderThickness="1"
-                        Padding="6 3"
-                        Width="80"
-                        FontWeight="SemiBold"/>
-            </StackPanel>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Orientation="Vertical" Grid.Row="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-        </StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border 
+                                        Background="{StaticResource TargetCardContentBlockBrush}"
+                                        CornerRadius="4"
+                                        Padding="2"
+                                        Margin="0,0,4,2"
+                                        Grid.Column="0">
+                                        <TextBlock 
+                                    Text="위도"
+                                    Style="{StaticResource TargetContentTextStyle}"/>
+                                    </Border>
+                                    <Border 
+                                    Background="{StaticResource TargetCardContentBlockBrush}"
+                                    CornerRadius="4"
+                                    Padding="2"
+                                    Margin="2,0,4,2"
+                                    Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                            Text="{Binding CurLatDisplay}"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="0"
+                                            />
+                                            <TextBlock
+                                            Text="(°)"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="1"/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                                <Grid Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border 
+                                Background="{StaticResource TargetCardContentBlockBrush}"
+                                CornerRadius="4"
+                                Padding="2"
+                                Margin="0,0,4,2"
+                                Grid.Column="0">
+                                        <TextBlock 
+                                    Text="경도"
+                                    Style="{StaticResource TargetContentTextStyle}"/>
+                                    </Border>
+                                    <Border 
+                                Background="{StaticResource TargetCardContentBlockBrush}"
+                                CornerRadius="4"
+                                Padding="2"
+                                Margin="0,0,4,2"
+                                Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                            Text="{Binding CurLonDisplay}"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="0"
+                                            />
+
+                                            <TextBlock
+                                    Text="(°)"
+                                    Style="{StaticResource TargetContentTextStyle}"
+                                    Grid.Column="1"/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width =" *"/>
+                                    <ColumnDefinition Width =" *"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <Border
+                                        Background="{StaticResource TargetCardContentBlockBrush}"
+                                        CornerRadius="4"
+                                        Padding="2"
+                                        Margin="0,2,4,2"
+                                        Grid.Column="0">    
+                                        <TextBlock 
+                                            Text="고도"
+                                            Style="{StaticResource TargetContentTextStyle}"/>
+                                    </Border>
+                                    <Border 
+                                        Background="{StaticResource TargetCardContentBlockBrush}"
+                                        CornerRadius="4"
+                                        Padding="2"
+                                        Margin="2,2,4,2"
+                                        Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                            Text="{Binding Altitude}"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="0"/>
+
+                                            <TextBlock
+                                            Text="(m)"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="1"/>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                                <Grid Grid.Column="1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border 
+                                        Background="{StaticResource TargetCardContentBlockBrush}"
+                                        CornerRadius="4"
+                                        Padding="2"
+                                        Margin="0,2,4,2"
+                                        Grid.Column="0">
+                                        <TextBlock 
+                                    Text="속도"
+                                    Style="{StaticResource TargetContentTextStyle}"/>
+                                    </Border>
+                                    <Border 
+                                    Background="{StaticResource TargetCardContentBlockBrush}"
+                                    CornerRadius="4"
+                                    Padding="2"
+                                    Margin="0,2,4,2"
+                                    Grid.Column="1">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock
+                                            Text="{Binding Speed}"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="0"/>
+
+                                            <TextBlock
+                                            Text="(m/s)"
+                                            Style="{StaticResource TargetContentTextStyle}"
+                                            Grid.Column="1">
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                                
+                            </Grid>
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border 
+                                    Background="{StaticResource TargetCardContentBlockBrush}"
+                                    CornerRadius="4"
+                                    Padding="2"
+                                    Margin="0,2,4,2"
+                                    Grid.Column="0">
+                                    <TextBlock 
+                                        Text="헤딩"
+                                        Style="{StaticResource TargetContentTextStyle}"/>
+                                </Border>
+                                <Border 
+                                    Background="{StaticResource TargetCardContentBlockBrush}"
+                                    CornerRadius="4"
+                                    Padding="2"
+                                    Margin="2,2,4,2"
+                                    Grid.Column="1">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                        Text="{Binding CurYawDisplay}"
+                                        Style="{StaticResource TargetContentTextStyle}"
+                                        Grid.Column="0"/>
+
+                                        <TextBlock
+                                        Text="(°)"
+                                        Style="{StaticResource TargetContentTextStyle}"
+                                        Grid.Column="1">
+                                        </TextBlock>
+                                    </Grid>
+                                </Border>
+                            </Grid>
+                            </Grid>
+                        </StackPanel>
+                        <Image Grid.Column="1"
+                           x:Name="TargetImage"
+                           Source= "/Resources/target2.png"
+                           Stretch="Uniform"
+                           Height="90"
+                           HorizontalAlignment="Stretch"
+                           VerticalAlignment="Top"
+                           Margin="8,0,0,0"/>
+                        
+                    </Grid>
+
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Margin="0,0,0,0">
+
+                            <!-- 삭제 버튼 -->
+                            <Button Content="삭제"
+                                Style="{StaticResource DefaultButtonStyle}"
+                                Command="{Binding DataContext.RemoveTargetCommand,
+                                                  RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding}"
+                                IsEnabled="{Binding CanRemove}"/>
+                            <!-- 시작 버튼 -->
+                            <Button Content="시작"
+                                    Style="{StaticResource DefaultButtonStyle}"
+                                    Command="{Binding DataContext.StartTargetCommand,
+                                                      RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    CommandParameter="{Binding}"
+                                    IsEnabled="{Binding CanStart}"
+                                    Margin="8,0,0,0"/>
+
+                            
+                        </StackPanel>
+                    </Grid>
+
+                </Grid>
+
+            </Border>
+
+        </Grid>
+
+
     </Border>
 </UserControl>
