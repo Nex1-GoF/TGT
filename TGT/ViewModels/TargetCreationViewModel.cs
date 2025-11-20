@@ -163,5 +163,31 @@ namespace TGT.ViewModels
 
         private static double ToRadians(double deg) => deg * Math.PI / 180.0;
         private static double ToDegrees(double rad) => rad * 180.0 / Math.PI;
+
+        partial void OnDetectedTypeChanged(char value)
+        {
+            switch (value)
+            {
+                case 'A': // MiG-29
+                    Speed = 765;
+                    Altitude = 18000;
+                    break;
+
+                case 'B': // MiG-23
+                    Speed = 789;
+                    Altitude = 18500;
+                    break;
+
+                case 'C': // Su-25
+                    Speed = 289;
+                    Altitude = 7000;
+                    break;
+
+                default:
+                    Speed = 300;
+                    Altitude = 5000;
+                    break;
+            }
+        }
     }
 }

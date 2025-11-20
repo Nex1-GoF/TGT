@@ -18,7 +18,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Border Background="{StaticResource TargetPanelBrush}"
+            <Border Background="{StaticResource TargetCreatorHeadPenalBrush}"
                     Margin="0,0,0,12">
                 <TextBlock
                     Text="표적 생성부"
@@ -26,7 +26,7 @@
                     TextAlignment="Center"
                     />
             </Border>
-            <StackPanel Grid.Column="0" Grid.Row="1">
+            <StackPanel Grid.Column="0" Grid.Row="1" Margin="12,0">
                 <Grid Margin="0 12 0 0" >
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -44,7 +44,6 @@
                     <ComboBox ItemsSource="{Binding ScenarioList}" Grid.Column="1"
                               SelectedItem="{Binding SelectedScenario}"
                               Background="{StaticResource TargetCreatorContentColor2}"
-                              Width="110"
                               HorizontalAlignment="Stretch"
                                       Margin="12,0,0,0"
                                       Foreground="Black"/>
@@ -63,7 +62,7 @@
                              TextAlignment="Center"
                               Style="{StaticResource TargetContentTextStyle}"/>
                     </Border>
-                    
+
                     <Grid Grid.Column="1" Margin="12,0,0,0" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -71,7 +70,7 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                            <RadioButton Content="MIG29"
+                        <RadioButton Content="MIG29"
                                          GroupName="DetectedTypeGroup"
                                          Grid.Column="0"
                                          HorizontalAlignment="Left"
@@ -81,7 +80,7 @@
                                                      ConverterParameter=A,
                                                      Mode=TwoWay}" />
 
-                            <RadioButton Content="MIG23"
+                        <RadioButton Content="MIG23"
                                          GroupName="DetectedTypeGroup"
                                          Grid.Column="1"
                                          HorizontalAlignment="Center"
@@ -91,7 +90,7 @@
                                                      ConverterParameter=B,
                                                      Mode=TwoWay}" />
 
-                            <RadioButton Content="SU25"
+                        <RadioButton Content="SU25"
                                          GroupName="DetectedTypeGroup"
                                          Grid.Column="2"
                                          HorizontalAlignment="Right"
@@ -100,6 +99,75 @@
                                                      Converter={StaticResource CharToBoolConverter},
                                                      ConverterParameter=C,
                                                      Mode=TwoWay}" />
+                    </Grid>
+                </Grid>
+                <Grid Margin="0 12 0 0" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border VerticalAlignment="Center" 
+                         Background="{StaticResource TargetCardContentBlockBrush}"
+                         CornerRadius="4"
+                         Grid.Column="0">
+                        <TextBlock 
+                              Text="모델 정보"
+                             TextAlignment="Center"
+                              Style="{StaticResource TargetContentTextStyle}"/>
+                    </Border>
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="12,0,0,0"
+                                Text="고도"
+                                Style="{StaticResource TargetContentTextStyle}"/>
+                                <TextBox Text="{Binding Altitude}"
+                                     Margin="12,0,0,0"
+                                     Width="50"
+                                     Background="{StaticResource TargetCreatorTextBlockColorBrush}"
+                                     Foreground="{StaticResource TargetCreatorTextBlockTextColorBrush}"
+                                     IsReadOnly="True"
+                                     Grid.Column="1"/>
+                            
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                Text="(m)"
+                                Style="{StaticResource TargetContentTextStyle}"
+                                Grid.Column="2"/>
+
+                        </Grid>
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="12,0,0,0"
+                                Text="속력"
+                                Style="{StaticResource TargetContentTextStyle}"/>
+                            <TextBox Text="{Binding Speed}"
+                                 Margin="12,0,0,0"
+                                 Width="50"
+                                 Background="{StaticResource TargetCreatorTextBlockColorBrush}"
+                                 Foreground="{StaticResource TargetCreatorTextBlockTextColorBrush}"
+                                 IsReadOnly="True"
+                                 Grid.Column="1"/>
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                Text="(m/s)"
+                                Style="{StaticResource TargetContentTextStyle}"
+                                Grid.Column="2"/>
+                        </Grid>
                     </Grid>
                 </Grid>
                 <Grid Margin="0 12 0 0" >
@@ -131,9 +199,9 @@
                                 Margin="12,0,0,0"
                                 Text="위도"
                                 Style="{StaticResource TargetContentTextStyle}"/>
-                            <TextBox Text="{Binding StartLat}"
+                                <TextBox Text="{Binding StartLat, StringFormat={}{0:F3}}"
                                      Margin="12,0,0,0"
-                                     Width="75"
+                                     Width="50"
                                      Background="{StaticResource TargetCardBrush}"
                                      Foreground="{StaticResource TargetContentTextBrush}"
                                      Grid.Column="1"/>
@@ -154,9 +222,9 @@
                                 Margin="12,0,0,0"
                                 Text="경도"
                                 Style="{StaticResource TargetContentTextStyle}"/>
-                            <TextBox Text="{Binding StartLat}"
+                            <TextBox Text="{Binding StartLon, StringFormat={}{0:F3}}"
                                  Margin="12,0,0,0"
-                                 Width="75"
+                                 Width="50"
                                  Background="{StaticResource TargetCardBrush}"
                                  Foreground="{StaticResource TargetContentTextBrush}"
                                  Grid.Column="1"/>
@@ -168,7 +236,82 @@
                         </Grid>
                     </Grid>
                 </Grid>
+                <Grid Margin="0 12 0 0" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="3*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border VerticalAlignment="Center"
+                         Background="{StaticResource TargetCardContentBlockBrush}"
+                         CornerRadius="4"
+                         Grid.Column="0">
+                        <TextBlock 
+                              Text="도착지"
+                             TextAlignment="Center"
+                              Style="{StaticResource TargetContentTextStyle}"/>
+                    </Border>
+                    <Grid Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="12,0,0,0"
+                                Text="위도"
+                                Style="{StaticResource TargetContentTextStyle}"/>
+                                <TextBox Text="{Binding EndLat, StringFormat={}{0:F3}}"
+                                     Margin="12,0,0,0"
+                                     Width="50"
+                                     Background="{StaticResource TargetCardBrush}"
+                                     Foreground="{StaticResource TargetContentTextBrush}"
+                                     Grid.Column="1"/>
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                Text="(°)"
+                                Style="{StaticResource TargetContentTextStyle}"
+                                Grid.Column="2"/>
 
+                        </Grid>
+                        <Grid Grid.Column="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock
+                                Margin="12,0,0,0"
+                                Text="경도"
+                                Style="{StaticResource TargetContentTextStyle}"/>
+                            <TextBox Text="{Binding EndLon, StringFormat={}{0:F3}}"
+                                 Margin="12,0,0,0"
+                                 Width="50"
+                                 Background="{StaticResource TargetCardBrush}"
+                                 Foreground="{StaticResource TargetContentTextBrush}"
+                                 Grid.Column="1"/>
+                            <TextBlock
+                                Margin="4,0,0,0"
+                                Text="(°)"
+                                Style="{StaticResource TargetContentTextStyle}"
+                                Grid.Column="2"/>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid Margin="0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        
+                    </Grid.ColumnDefinitions>
+                    <Button Content="시작" Grid.Column="1"
+                          Style="{StaticResource DefaultButtonStyle}"
+                          Command="{Binding AddTargetCommand}"/>
+                </Grid>
             </StackPanel>
         </Grid>
         

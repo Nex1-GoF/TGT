@@ -10,6 +10,7 @@
 
         <!-- Color Pelatte -->
         <Color x:Key="DarkPanelColor">#1f1f1f</Color>
+        <Color x:Key="BrightPanelColor">#545454</Color>
 
         <Color x:Key="KeyColor">#677e5b</Color>
         <Color x:Key="KeyColorDark">#3c4336</Color>
@@ -19,6 +20,7 @@
         <Color x:Key="SubColor2">#ffffff</Color>
         <Color x:Key="SubColor3">#bababa</Color>
         <Color x:Key="SubColor4">#ff3131</Color>
+        <Color x:Key="SubColor5">#000000</Color>
         
         <Color x:Key="KeyColorDim">#1f1f1f</Color>
         <Color x:Key="KeyColorDim2">#201f1f</Color>
@@ -75,7 +77,7 @@
         
 
         <!-- 타겟 생성부 Color Brushes -->
-        <SolidColorBrush x:Key="TargetCreatorHeadPenalBrush" Color="{StaticResource KeyColorDim2}"/>
+        <SolidColorBrush x:Key="TargetCreatorHeadPenalBrush" Color="{StaticResource BrightPanelColor}"/>
         
         <SolidColorBrush x:Key="TargetCreatorHeadPenalTextBrush" Color="{StaticResource SubColor2}"/>
         <!-- 표적생성 헤더 패널컬러-->
@@ -84,6 +86,7 @@
         <SolidColorBrush x:Key="TargetCreatorTextBoxStrokeColorBrush" Color="{StaticResource SubColor2}"/>
         <!-- 표적생성 텍스트박스 가장자리 컬러-->
         <SolidColorBrush x:Key="TargetCreatorTextBlockColorBrush" Color="{StaticResource SubColor3}"/>
+        <SolidColorBrush x:Key="TargetCreatorTextBlockTextColorBrush" Color="{StaticResource SubColor5}"/>
         <!-- 표적생성 텍스트블럭 컬러-->
         <SolidColorBrush x:Key="TargetCreatorContentColor" Color="{StaticResource SubColor2}"/>
         <!-- 표적생성 텍스트블럭 컬러-->
