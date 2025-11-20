@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using TGT.Models;
 using TGT.Services;
@@ -45,24 +46,50 @@ namespace TGT.Services
             // 원 그리기
         }
 
-        public GMapPolygon? DrawDetectionCircle()
+        public GMapPolygon DrawDetectionCircle()
         {
-            if (_map == null || Distance <= 0) return null;
 
             var points = CreateCircle(Center, Distance, 72);
-            GMapPolygon CirclePolygon = new GMapPolygon(points)
+            GMapPolygon CirclePolygon = new GMapPolygon(points);
+            const double R = 6378137.0;
+            var pts = new List<PointLatLng>();
+            double lat = Deg2Rad(Center.Lat);
+            double lon = Deg2Rad(Center.Lng);
+            double d = Distance / R;
+
+            for (int i = 0; i <= 72; i++)
             {
-                Shape = new Path
+                double a = 2 * System.Math.PI * i / 72;
+                double latP = System.Math.Asin(System.Math.Sin(lat) * System.Math.Cos(d) +
+                                               System.Math.Cos(lat) * System.Math.Sin(d) * System.Math.Cos(a));
+                double lonP = lon + System.Math.Atan2(System.Math.Sin(a) * System.Math.Sin(d) * System.Math.Cos(lat),
+                                                      System.Math.Cos(d) - System.Math.Sin(lat) * System.Math.Sin(latP));
+                pts.Add(new PointLatLng(Rad2Deg(latP), Rad2Deg(lonP)));
+            }
+
+            return new GMapPolygon(pts)
+            {
+                Shape = new System.Windows.Shapes.Path
                 {
-                    Stroke = Brushes.LimeGreen,
-                    StrokeThickness = 2,
-                    Fill = Brushes.Transparent
+                    Stroke = new SolidColorBrush(Color.FromRgb(232, 247, 255)),
+                    StrokeThickness = 2.5,
+                    StrokeDashArray = new DoubleCollection { 4, 6 }, // 레이더 점선 느낌
+                    Opacity = 0.8,
+                    Fill = Brushes.Transparent,
+                    Effect = new DropShadowEffect
+                    {
+                        Color = Color.FromRgb(0, 255, 200),
+                        BlurRadius = 25,
+                        ShadowDepth = 0,
+                        Opacity = 0.7
+                    }
                 }
             };
-            return CirclePolygon;
         }
 
-        
+        private static double Deg2Rad(double d) => d * System.Math.PI / 180.0;
+        private static double Rad2Deg(double r) => r * 180.0 / System.Math.PI;
+
 
         private static List<PointLatLng> CreateCircle(PointLatLng center, double radiusMeters, int segments)
         {

@@ -30,19 +30,22 @@
 
         <!-- fonts-->
         <FontFamily x:Key="JetbrainBold">
-            pack://application:,,,/C2;component/Resources/Fonts/#JetBrains Mono
+            pack://application:,,,/TGT;component/Resources/Fonts/#JetBrains Mono
         </FontFamily>
         <FontFamily x:Key="JetbrainMedium">
-            pack://application:,,,/C2;component/Resources/Fonts/#JetBrains Mono Medium
+            pack://application:,,,/TGT;component/Resources/Fonts/#JetBrains Mono Medium
         </FontFamily>
         <FontFamily x:Key="NanumLight">
-            pack://application:,,,/C2;component/Resources/Fonts/#나눔스퀘어 네오 Light
+            pack://application:,,,/TGT;component/Resources/Fonts/#나눔스퀘어 네오 Light
+        </FontFamily>
+        <FontFamily x:Key="NanumRegular">
+            pack://application:,,,/TGT;component/Resources/Fonts/#나눔스퀘어 네오 Regular
         </FontFamily>
         <FontFamily x:Key="NanumBold">
-            pack://application:,,,/C2;component/Resources/Fonts/#나눔스퀘어 네오 Bold
+            pack://application:,,,/TGT;component/Resources/Fonts/#나눔스퀘어 네오 Bold
         </FontFamily>
         <FontFamily x:Key="NanumHeavy">
-            pack://application:,,,/C2;component/Resources/Fonts/#나눔스퀘어 네오 Heavy
+            pack://application:,,,/TGT;component/Resources/Fonts/#나눔스퀘어 네오 Heavy
         </FontFamily>
 
 
@@ -97,20 +100,29 @@
 
         <!-- 타겟 카드 -->
         <Style x:Key="MissilePanelHeaderTextStyle" TargetType="TextBlock"><!-- TGT-001 -->
-
-            <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource JetbrainBold}"/>
+            <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="24"/>
         </Style>
-
+        <Style x:Key="TargetCardDetectedIDTextStyle" TargetType="TextBlock">
+            <!-- MIG29 -->
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
+            <Setter Property="Foreground" Value="{StaticResource TargetCardDetectedIDTextBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
         <Style x:Key="TargetCardFlightIdTextStyle" TargetType="TextBlock">
             <!-- MIG29 -->
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
             <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Medium"/>
         </Style>
+
         <Style x:Key="TargetDetectedColor" TargetType="TextBlock">
             <!-- MIG29 -->
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
             <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Medium"/>
@@ -118,13 +130,15 @@
 
         <Style x:Key="TargetContentTextStyle" TargetType="TextBlock">
             <!-- 위도 경도 고도 -->
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
             <Setter Property="Foreground" Value="{StaticResource TargetContentTextBrush}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Medium"/>
         </Style>
 
         <Style x:Key="TargetStartEndTextStyle" TargetType="TextBlock">
             <!-- 시작 끝 -->
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
             <Setter Property="Foreground" Value="{StaticResource TargetCreatorContentColor2}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -132,6 +146,7 @@
 
         <!-- 표적 생성부 -->
         <Style x:Key="TargetCreationPenalTextStyle" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
             <Setter Property="Foreground" Value="{StaticResource TargetCreatorHeadPenalTextBrush}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -149,6 +164,7 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
 
             <Setter Property="Template">
                 <Setter.Value>
@@ -202,6 +218,7 @@
             <Setter Property="Background" Value="#677E5B"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontFamily" Value="{StaticResource NanumRegular}"/>
 
             <Setter Property="Template">
                 <Setter.Value>

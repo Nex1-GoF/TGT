@@ -124,6 +124,24 @@ namespace TGT.ViewModels
             double yawDeg = CalculateYaw(startLat, startLon, endLat, endLon);
             int yawInt = (int)(yawDeg * 100);
 
+            string targetInfoName;
+
+            switch (detectedType)
+            {
+                case 'A':
+                    targetInfoName = "MIG-29";
+                    break;
+                case 'B':
+                    targetInfoName = "MIG-22";
+                    break;
+                case 'C':
+                    targetInfoName = "SU-25";
+                    break;
+                default:
+                    targetInfoName = "Unknown";
+                    break;
+            }
+
             var target = new Target
             {
                 Id = _nextId++,
@@ -133,7 +151,8 @@ namespace TGT.ViewModels
                 CurLoc = (startLat, startLon),
                 EndLoc = (endLat, endLon),
                 Yaw = yawInt,
-                ScenarioId = SelectedScenario
+                ScenarioId = SelectedScenario,
+                TargetInfoName = targetInfoName
             };
 
             TargetService.Instance.AddTarget(target);

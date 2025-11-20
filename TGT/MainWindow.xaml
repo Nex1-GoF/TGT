@@ -30,11 +30,11 @@
     VerticalAlignment="Top"
     Margin="15">
             <!--접기/펼치기-->
-            <TextBlock Text="시스템 메시지: 생성한 표적이 있습니다."
+            <!-- Text="시스템 메시지: 생성한 표적이 있습니다."
            FontSize="16" FontWeight="SemiBold"
            Foreground="Red">
 
-                <TextBlock.Style>
+                <.Style>
                     <Style TargetType="TextBlock">
                         <Setter Property="Visibility" Value="Collapsed"/>
                         <Style.Triggers>
@@ -44,8 +44,8 @@
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
-                </TextBlock.Style>
-            </TextBlock>
+                </.Style>
+            </>
             <TextBlock Text="시스템 메시지: 표적을 생성하세요"
            FontSize="16" FontWeight="SemiBold"
            Foreground="Red">
@@ -61,7 +61,7 @@
                         </Style.Triggers>
                     </Style>
                 </TextBlock.Style>
-            </TextBlock>
+            </TextBlock-->
         </StackPanel>
         <!-- TargetPanel: 왼쪽 아래 (3/4, 1/4) -->
         <views:TargetPanel Grid.Row="0" Grid.Column="1" 

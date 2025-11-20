@@ -78,6 +78,7 @@ namespace TGT.Models
             set { _isDetected = value; OnPropertyChanged(); }
         }
 
+        public string TargetInfoName { get; set; }
         // Todo: 시나리오 모드인지 아닌지 추가
 
 
