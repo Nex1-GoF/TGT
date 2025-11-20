@@ -35,7 +35,7 @@ namespace TGT.ViewModels
         private static char _nextId = '1';
         public TargetCreationViewModel()
         {
-            DetectedType = 'A';
+            DetectedType = 'A'  ;
             SelectedScenario = "Default";
 
             ScenarioList = new ObservableCollection<string>(ScenarioService.Instance.ScenarioIds);
