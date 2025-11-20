@@ -152,7 +152,13 @@
             <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
-
+        <Style x:Key="TargetmarkerTextStyle" TargetType="TextBlock">
+            <!-- TGT-001 -->
+            <Setter Property="FontFamily" Value="{StaticResource JetbrainBold}"/>
+            <Setter Property="Foreground" Value="{StaticResource TargetCardIDTextBrush}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="18"/>
+        </Style>
 
         <!--버튼 스타일-->
         <Style x:Key="DefaultButtonStyle" TargetType="Button">

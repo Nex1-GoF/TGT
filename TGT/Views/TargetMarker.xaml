@@ -9,38 +9,37 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="40"/>
-            <ColumnDefinition Width="*" />
+            <!-- 픽토그램 영역 -->
+            <ColumnDefinition Width="Auto"/>
+            <!-- 텍스트 -->
         </Grid.ColumnDefinitions>
 
-        <!-- 🔹 삼각형 (Yaw 각도에 따라 회전) -->
+        <!-- 🔹 회전되는 픽토그램 영역 -->
         <Grid Grid.Column="0"
-          HorizontalAlignment="Center"
-          VerticalAlignment="Center"
-          RenderTransformOrigin="0.5,0.5">
+              Width="40" Height="40"
+              RenderTransformOrigin="0.5,0.5">
             <Grid.RenderTransform>
-                <!-- 0도 = 북쪽, 90도 = 동쪽 -->
-                <RotateTransform Angle="{Binding Yaw}" />
+                <RotateTransform x:Name="Rt"/>
             </Grid.RenderTransform>
 
-            <!-- 🔺 빨간 삼각형 -->
-            <!-- 🔺 빨간 삼각형 -->
-            <Polygon 
-                Points="0,-15 12,10 -12,10"
-                Fill="{Binding FillBrush}"
-                Stroke="{Binding StrokeBrush}"
-                StrokeThickness="1.5"/>
-
-
+            <Rectangle x:Name="TargetRect"
+                       Fill="Red"
+                       Width="40" Height="40">
+                <Rectangle.OpacityMask>
+                    <ImageBrush ImageSource="pack://application:,,,/TGT;component/Resources/tgt_marker.png"/>
+                </Rectangle.OpacityMask>
+            </Rectangle>
         </Grid>
 
-        <!-- 🔸 Target ID -->
+        <!-- 🔹 회전되지 않는 Target ID 텍스트 -->
         <TextBlock Grid.Column="1"
-               Text="{Binding Id}"
-               Foreground="{Binding StrokeBrush}"
-               FontSize="13"
-               FontWeight="Bold"
-               VerticalAlignment="Center"
-               Margin="5,0,0,0"/>
+                   x:Name="IdLabel"
+                   Text="TGT-000"
+                   Foreground="Red"
+                   Style="{StaticResource TargetmarkerTextStyle}"
+                   VerticalAlignment="Center"
+                   Margin="10,0,0,0"/>
+        <!-- 픽토그램 오른쪽 10px -->
     </Grid>
 </UserControl>
 

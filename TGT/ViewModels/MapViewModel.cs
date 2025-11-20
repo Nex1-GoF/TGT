@@ -12,6 +12,7 @@ using System.Windows.Shapes;
 using TGT.Messages;
 using TGT.Models;
 using TGT.Services;
+using TGT.Views;
 
 namespace TGT.ViewModels
 {
@@ -127,19 +128,20 @@ namespace TGT.ViewModels
                 _targetService.SelectTarget(target);
             };
 
-            var newMarker = new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))
+            var shape = new TargetMarker(target.Id);   // 너가 만든 픽토그램 Shape
+            var marker = new GMapMarker(new PointLatLng(target.CurLoc.Lat, target.CurLoc.Lon))
             {
-                Shape = triangle,
-                Offset = new Point(-20, -20),
+                Shape = shape,
+                Offset = new System.Windows.Point(-20, -20), // 중심 정렬
                 Tag = key
             };
 
             // ✅ 지도에 등록
-            if (!_map.Markers.Contains(newMarker))
-                _map.Markers.Add(newMarker);
+            if (!_map.Markers.Contains(marker))
+                _map.Markers.Add(marker);
 
             // ✅ 딕셔너리에 저장
-            _customMarkers[key] = newMarker;
+            _customMarkers[key] = marker;
 
             // ✅ 다음 클릭은 START부터
             _isStart = true;
@@ -187,9 +189,9 @@ namespace TGT.ViewModels
                 marker.Position = new PointLatLng(lat, lon);
 
                 // (선택) Shape 회전 등 추가 업데이트 가능
-                if (marker.Shape is Path shape && _targetService.Targets.FirstOrDefault(t => t.Id == targetId) is Target tgt)
+                if (marker.Shape is TargetMarker shape && _targetService.Targets.FirstOrDefault(t => t.Id == targetId) is Target tgt)
                 {
-                    shape.RenderTransform = new RotateTransform(tgt.Yaw / 100.0);
+                    shape.SetYaw(tgt.Yaw / 100.0);
                 }
             }
             else

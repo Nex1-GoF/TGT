@@ -21,39 +21,38 @@ namespace TGT.Views
     /// </summary>
     public partial class TargetMarker : UserControl
     {
-        //public TargetMarker()
-        //{
-        //    InitializeComponent();
-        //}
+        private static readonly Brush UnfocusedFill = new SolidColorBrush(Color.FromRgb(255, 80, 80));
+        private static readonly Brush FocusedFill = new SolidColorBrush(Colors.Yellow);
+        public char TargetId { get; }
+        public TargetMarker(char targetId)
+        {
+            InitializeComponent();
+            TargetId = targetId;
 
-        //private static readonly Brush UnfocusedStroke = new SolidColorBrush(Colors.Red);
-        //private static readonly Brush UnfocusedFill = new SolidColorBrush(Color.FromRgb(0xFF, 0x40, 0x40));
+            IdLabel.Text = $"TGT-00{targetId}";
+            SetFocused(false);
+        }
 
-        //private static readonly Brush FocusedStroke = new SolidColorBrush(Colors.Blue);
-        //private static readonly Brush FocusedFill = new SolidColorBrush(Colors.Blue);
-        //public char TargetId { get; }
+        public void SetYaw(double yaw)
+        {
+            Rt.Angle = yaw;
+        }
 
+        public void SetFocused(bool focused)
+        {
+            if (focused)
+            {
+                TargetRect.Fill = FocusedFill;
+                IdLabel.Foreground = FocusedFill;
+                return;
+            }
+            TargetRect.Fill = UnfocusedFill;
+            IdLabel.Foreground = UnfocusedFill;
+        }
 
-        //public void SetYaw(double yaw)
-        //{
-        //    Rt.Angle = yaw;
-        //}
-
-        //public void SetFocused(bool focused)
-        //{
-        //    if (focused)
-        //    {
-        //        TargetRect.Stroke = FocusedStroke;
-        //        TargetRect.Fill = FocusedFill;
-        //        return;
-        //    }
-        //    TargetRect.Stroke = UnfocusedStroke;
-        //    TargetRect.Fill = UnfocusedFill;
-        //}
-
-        //public void SetVisible(bool isVisible)
-        //{
-        //    this.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
-        //}
+        public void SetVisible(bool isVisible)
+        {
+            this.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 }
