@@ -16,7 +16,7 @@ using TGT.Views;
 
 namespace TGT.ViewModels
 {
-    public class MapViewModel
+    public class MapViewModel : IDisposable
     {
         private readonly TargetService _targetService = TargetService.Instance;
         private readonly MapService _mapService = MapService.Instance;
@@ -42,8 +42,13 @@ namespace TGT.ViewModels
 
             WeakReferenceMessenger.Default.Register<TargetRemoveMessage>(this, (r, msg) =>
             {
-                var data = msg.Value;
-                RemoveCustomMarker($"TGT-{data.TargetId}");
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var data = msg.Value;
+                    RemoveCustomMarker($"TGT-{data.TargetId}");
+
+                });
+                
             });
             WeakReferenceMessenger.Default.Register<TargetAddMessage>(this, (r, msg) =>
             {
@@ -58,8 +63,11 @@ namespace TGT.ViewModels
 
             _updateDispatcher.Register(Update);
         }
-        ~MapViewModel()
+        public void Dispose()
         {
+            WeakReferenceMessenger.Default.Unregister<TargetRemoveMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<TargetAddMessage>(this);
+            WeakReferenceMessenger.Default.Unregister<TargetSelectMessage>(this);
             _updateDispatcher.Unregister(Update);
         }
 

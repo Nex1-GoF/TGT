@@ -18,13 +18,13 @@ namespace TGT
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ReceiveExit _receiveExit;
+        //private ReceiveExit _receiveExit;
         public MainWindow()
         {
             InitializeComponent();
             PreviewKeyDown += OnPreviewKeyDown;
-            _receiveExit = new ReceiveExit(50000);
-            _receiveExit.Start();
+            //_receiveExit = new ReceiveExit(50000);
+            //_receiveExit.Start();
         }
         private readonly Dictionary<Key, DateTime> _lastKeyTimes = new();
         private readonly TimeSpan _keyInterval = TimeSpan.FromMilliseconds(500);

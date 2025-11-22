@@ -370,8 +370,9 @@ namespace TGT.Services
                 tgtFin.Deserialize(buffer);
 
                 Debug.WriteLine($"Received TGT_FIN for Target ID: {tgtFin.DetectedId}");
-
-                RemoveTargetWithid(tgtFin.DetectedId);
+                var target = Targets.FirstOrDefault(t => t.Id==tgtFin.DetectedId);
+                if (target==null) return;
+                RemoveTarget(target);
 
                 //Target ReceiveTarget = //받은 패킷까서 해당 id 타겟
                 //RemoveTarget(ReceiveTarget);
@@ -445,6 +446,7 @@ namespace TGT.Services
         {
             Targets.Remove(target);
             WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
+
             WeakReferenceMessenger.Default.Send(new TargetListChangedMessage());
             var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
             if (logVM != null)
