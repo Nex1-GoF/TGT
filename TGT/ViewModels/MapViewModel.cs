@@ -46,9 +46,7 @@ namespace TGT.ViewModels
                 {
                     var data = msg.Value;
                     RemoveCustomMarker($"TGT-{data.TargetId}");
-
                 });
-                
             });
             WeakReferenceMessenger.Default.Register<TargetAddMessage>(this, (r, msg) =>
             {

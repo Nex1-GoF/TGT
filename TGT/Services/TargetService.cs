@@ -444,13 +444,22 @@ namespace TGT.Services
 
         public void RemoveTarget(Target target)
         {
-            Targets.Remove(target);
-            WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Targets.Remove(target);
+                    WeakReferenceMessenger.Default.Send(new TargetRemoveMessage(new TargetRemoveData(target.Id.ToString())));
 
-            WeakReferenceMessenger.Default.Send(new TargetListChangedMessage());
-            var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
-            if (logVM != null)
-                logVM.IsAnyTarget = Targets.Count > 0;
+                    WeakReferenceMessenger.Default.Send(new TargetListChangedMessage());
+                });
+                var logVM = Application.Current.MainWindow.Resources["LogVM"] as LogViewModel;
+                if (logVM != null)
+                    logVM.IsAnyTarget = Targets.Count > 0;
+            } catch (Exception ex)
+            {
+                Debug.WriteLine(ex.ToString());
+            }
         }
 
         private Target? FindTarget(char id)
