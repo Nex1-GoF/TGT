@@ -189,7 +189,8 @@ namespace TGT.ViewModels
             {
                 case 'A': // MiG-29
                     Speed = 765;
-                    Altitude = 18000;
+                    //Altitude = 18000;
+                    Altitude = 800;
                     break;
 
                 case 'B': // MiG-23

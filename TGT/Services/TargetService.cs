@@ -107,7 +107,7 @@ namespace TGT.Services
 
     public class TgtFinPacket
     {
-        public const int TGT_FIN_PACKET_SIZE = 14;
+        public const int TGT_FIN_PACKET_SIZE = 15;
 
         public string SrcId { get; set; }              // 송신자 아이디 (4 chars)
         public string DesId { get; set; }              // 수신자 아이디 (4 chars)
@@ -122,6 +122,63 @@ namespace TGT.Services
             Seq = seq;
             MsgSize = msgSize;
             DetectedId = detectedId;
+        }
+
+        public TgtFinPacket()
+        {
+        }
+
+        public byte[] Serialize()
+        {
+            var buffer = new byte[TGT_FIN_PACKET_SIZE];
+            var span = buffer.AsSpan();
+            int offset = 0;
+
+            // 4 bytes
+            Encoding.ASCII.GetBytes(SrcId.PadRight(4))
+                .CopyTo(span.Slice(offset, 4));
+            offset += 4;
+
+            // 4 bytes
+            Encoding.ASCII.GetBytes(DesId.PadRight(4))
+                .CopyTo(span.Slice(offset, 4));
+            offset += 4;
+
+            // 4 bytes
+            BitConverter.TryWriteBytes(span.Slice(offset, 4), Seq);
+            offset += 4;
+
+            // 1 byte
+            span[offset++] = MsgSize;
+
+            // 1 byte
+            span[offset++] = (byte)DetectedId;
+
+            return buffer;
+        }
+
+        public TgtFinPacket Deserialize(byte[] data)
+        {
+            //if (data.Length != TGT_FIN_PACKET_SIZE)
+            //    throw new ArgumentException("Invalid packet size");
+
+            var span = data.AsSpan();
+            int offset = 0;
+
+            SrcId = Encoding.ASCII.GetString(span.Slice(offset, 4)).Trim();
+            offset += 4;
+
+            DesId = Encoding.ASCII.GetString(span.Slice(offset, 4)).Trim();
+            offset += 4;
+
+            Seq = BitConverter.ToUInt32(span.Slice(offset, 4));
+            offset += 4;
+
+            MsgSize = span[offset++];
+
+            DetectedId = (char)span[offset++];
+
+            return this;
         }
     }
 
@@ -138,7 +195,7 @@ namespace TGT.Services
         //public Target? SelectedTarget;
 
         // === 소켓 ===
-        private static string DestIp = "127.0.0.1";
+        private static string DestIp = "192.168.1.100"; //"127.0.0.1";
         private static int DestPort = 7003;
 
         private Socket txSocket;
@@ -153,9 +210,9 @@ namespace TGT.Services
             ipAddress = IPAddress.Parse(DestIp);
             ep = new IPEndPoint(ipAddress, DestPort);
 
-            //rxSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            //rxSocket.Bind(new IPEndPoint(IPAddress.Any, 6004));
-            //Task.Run(StartReceivingAsync);
+            rxSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            rxSocket.Bind(new IPEndPoint(IPAddress.Any, 6004));
+            Task.Run(StartReceivingAsync);
 
             // ✅ 정확히 100Hz 고정 루프 시작
             _updateThread = new Thread(UpdateLoop)
@@ -168,7 +225,7 @@ namespace TGT.Services
         // ✅ 기존 DispatcherTimer → Fixed 100Hz 업데이트로 변경
         private void UpdateLoop()
         {
-            const double dt = 1;   // 100Hz
+            const double dt = 0.1;   // 100Hz
             Stopwatch sw = Stopwatch.StartNew();
             double accumulated = 0;
 
@@ -290,13 +347,33 @@ namespace TGT.Services
 
         private async Task StartReceivingAsync()
         {
+            Debug.WriteLine($"소켓 열림");
+
             var buffer = new byte[TgtFinPacket.TGT_FIN_PACKET_SIZE];
             EndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
 
             while (true)
             {
-                var result = await rxSocket.ReceiveFromAsync(new ArraySegment<byte>(buffer), SocketFlags.None, remoteEP);
-                //Target ReceiveTarget = 받은 패킷까서 해당 id 타겟
+
+                try
+                {
+                    var result = await rxSocket.ReceiveFromAsync(new ArraySegment<byte>(buffer), SocketFlags.None, remoteEP);
+                }
+                catch (SocketException ex)
+                {
+                    Debug.WriteLine($"[SocketException] Code={ex.SocketErrorCode}, Msg={ex.Message}");
+                    throw;
+                }
+
+                
+                TgtFinPacket tgtFin = new TgtFinPacket();
+                tgtFin.Deserialize(buffer);
+
+                Debug.WriteLine($"Received TGT_FIN for Target ID: {tgtFin.DetectedId}");
+
+                RemoveTargetWithid(tgtFin.DetectedId);
+
+                //Target ReceiveTarget = //받은 패킷까서 해당 id 타겟
                 //RemoveTarget(ReceiveTarget);
                 // 격추 알려주는 로직
             }
